@@ -18,7 +18,7 @@ from config.settings import (
     MILEAGE_RANDOM_STATE,
 )
 from utils.model_registry import instantiate_model
-from utils.helper import generate_learning_curve_data, compute_regression_metrics
+from utils.model_helper import generate_learning_curve_data, compute_regression_metrics
 
 
 def train_mileage_model(

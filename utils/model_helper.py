@@ -8,83 +8,6 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import learning_curve
 
 
-
-def handle_missing_values(df: pd.DataFrame, col: str) -> pd.DataFrame:
-    """Handles missing values in a specified DataFrame column based on the percentage
-
-    of missing data.
-
-    Rules:
-    - 50% missing: Drop column.
-    - 30% - 50% missing: Drop rows with missing values in column.
-    - 10% - 30% missing: Fill missing values (mode for categorical, mean for numerical)
-                         and create a missing indicator column (`{col}_was_missing`).
-    - < 10% missing: Fill missing values (mode for categorical, median for numerical).
-    """
-    if col not in df.columns:
-        print(f"Column '{col}' not found in DataFrame.")
-        return df
-
-    missing_count = df[col].isnull().sum()
-    total_rows = len(df)
-
-    if total_rows == 0:
-        print("DataFrame is empty.")
-        return df
-
-    missing_pct = (missing_count / total_rows) * 100
-    print(f"{col}: {missing_pct:.2f}% missing", end=" → ")
-
-    # Drop column if > 50% missing
-    if missing_pct > 50:
-        df = df.drop(columns=[col])
-        print("Dropped column (>50% missing)")
-
-    # Drop rows if between 30% and 50% missing
-    elif missing_pct > 30:
-        df = df.dropna(subset=[col]).reset_index(drop=True)
-        print("Dropped rows (30-50% missing)")
-
-    # Fill + add indicator column if between 10% and 30% missing
-    elif missing_pct > 10:
-        indicator_col = f"{col}_was_missing"
-        df[indicator_col] = df[col].isnull().astype(int)
-
-        if df[col].dtype == "object" or isinstance(
-            df[col].dtype, pd.CategoricalDtype
-        ):
-            mode_vals = df[col].mode()
-            fill_val = mode_vals[0] if not mode_vals.empty else "Unknown"
-            strategy = f"mode ('{fill_val}')"
-        else:
-            fill_val = df[col].mean()
-            strategy = f"mean ({fill_val:.2f})"
-
-        df[col] = df[col].fillna(fill_val)
-        print(
-            f"Filled with {strategy} + added indicator column '{indicator_col}' (10-30% missing)"
-        )
-    # Fill if < 10% missing
-    elif missing_pct > 0:
-        if df[col].dtype == "object" or isinstance(
-            df[col].dtype, pd.CategoricalDtype
-        ):
-            mode_vals = df[col].mode()
-            fill_val = mode_vals[0] if not mode_vals.empty else "Unknown"
-            strategy = f"mode ('{fill_val}')"
-        else:
-            fill_val = df[col].median()
-            strategy = f"median ({fill_val:.2f})"
-
-        df[col] = df[col].fillna(fill_val)
-        print(f"Filled with {strategy} (<10% missing)")
- 
-    else:
-        print("No missing values")
-
-    return df
-
-
 def get_and_validate_features(features_file: Path, db_file: Path) -> list[str]:
     """Reads raw feature names from a text file and verifies their existence
 
@@ -151,7 +74,6 @@ def get_and_validate_features(features_file: Path, db_file: Path) -> list[str]:
     )
     return target_columns
 
-
 def compute_regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
     """Calculates R2, MAE, and RMSE regression evaluation metrics."""
     mse = mean_squared_error(y_true, y_pred)
@@ -160,7 +82,6 @@ def compute_regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[s
         "mae": float(mean_absolute_error(y_true, y_pred)),
         "rmse": float(np.sqrt(mse)),
     }
-
 
 def generate_learning_curve_data(
     estimator: Any,

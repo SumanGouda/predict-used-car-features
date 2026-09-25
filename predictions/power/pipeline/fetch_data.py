@@ -19,7 +19,7 @@ from config.settings import (
     PROCESSED_FILE_POWER,
 )
 from utils.cleaning import apply_cleaning_pipeline
-from utils.helper import get_and_validate_features
+from utils.model_helper import get_and_validate_features
 
 def main(
 features_txt_path: str, 

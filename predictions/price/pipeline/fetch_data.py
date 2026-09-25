@@ -7,7 +7,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-from utils.helper import get_and_validate_features
+from utils.model_helper import get_and_validate_features
 from utils.cleaning import apply_cleaning_pipeline
 from config.settings import (
     DB_FILE,
