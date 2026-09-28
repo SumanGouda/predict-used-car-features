@@ -7,7 +7,6 @@ import pandas as pd
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import learning_curve
 
-
 def get_and_validate_features(features_file: Path, db_file: Path) -> list[str]:
     """Reads raw feature names from a text file and verifies their existence
 

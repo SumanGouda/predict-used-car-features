@@ -1,6 +1,9 @@
 from pathlib import Path
 from functools import partial
-from utils.cleaning import clean_drive_type, clean_turbo_charger, clean_price, clean_car_name, clean_emission_norm, clean_ownership
+from utils.cleaning import (
+    clean_drive_type, clean_turbo_charger, clean_price, 
+    clean_car_name, clean_emission_norm, clean_ownership,
+)
 
 # ==========================================
 # System & Path Configurations
@@ -105,45 +108,23 @@ FUNC_CLEAN_DICT = {
 # ==========================================
 # Model Training Settings: Mileage
 # ==========================================
-MILEAGE_MODEL_TYPE = "xgboost"
-MILEAGE_RANDOM_STATE = 42
-MILEAGE_CV_FOLDS = 5
-
+from sklearn.ensemble import RandomForestRegressor
+MILEAGE_MODEL = RandomForestRegressor(random_state=42)
 MILEAGE_PARAM_GRID = {
     "n_estimators": [100, 200],
-    "max_depth": [3, 5, 7],
-    "learning_rate": [0.01, 0.1],
-    "subsample": [0.8, 1.0],
-    "colsample_bytree": [0.8, 1.0],
+    "max_depth": [5, 10, None],
+    "min_samples_split": [2, 5],
 }
+TARGET_COLUMN = "Mileage"
+DATASET = PROCESSED_FILE_MILEAGE
+DATASET = PROCESSED_FILE_MILEAGE
 
 # ==========================================
 # Model Training Settings: Power
 # ==========================================
-POWER_MODEL_TYPE = "xgboost"
-POWER_RANDOM_STATE = 42
-POWER_CV_FOLDS = 5
-
-POWER_PARAM_GRID = {
-    "n_estimators": [100, 200],
-    "max_depth": [3, 5, 7],
-    "learning_rate": [0.01, 0.1],
-    "subsample": [0.8, 1.0],
-    "colsample_bytree": [0.8, 1.0],
-}
 
 
 # ==========================================
 # Model Training Settings: Price
 # ==========================================
-PRICE_MODEL_TYPE = "random_forest"
-PRICE_RANDOM_STATE = 42
-PRICE_CV_FOLDS = 5
 
-PRICE_PARAM_GRID = {
-    "n_estimators": [100, 200, 300],
-    "max_depth": [8, 12, 16],
-    "min_samples_split": [2, 5, 10],
-    "min_samples_leaf": [1, 2, 5],
-    "max_features": [0.6, 0.75, 0.85],
-}

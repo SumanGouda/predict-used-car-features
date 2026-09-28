@@ -384,4 +384,3 @@ def _encode_column_ohe(
 
     return dummies, metadata
 
-    

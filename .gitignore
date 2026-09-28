@@ -48,3 +48,5 @@ Thumbs.db
 # Project-specific folders
 web_scraping_old/
 ANN/
+trash/
+mlruns/
