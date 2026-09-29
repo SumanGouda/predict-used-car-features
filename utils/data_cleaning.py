@@ -4,10 +4,7 @@ import pandas as pd
 import numpy as np
 from typing import Any
 
-def handle_missing_values(
-    df: pd.DataFrame,
-    col: str,
-) -> tuple[pd.DataFrame, dict]:
+def handle_missing_values(df: pd.DataFrame, col: str,) -> tuple[pd.DataFrame, dict]:
     """
     Handles missing values and returns metadata describing
     the operation performed.
@@ -311,7 +308,6 @@ def apply_cleaning_pipeline(
 
             if isinstance(rule, tuple):
                 clean_func, new_cols = rule
-
                 df[new_cols] = (df[col].apply(clean_func).apply(pd.Series))
                 df = df.drop(columns=[col])
 
@@ -338,25 +334,18 @@ def apply_cleaning_pipeline(
         df[bool_cols] = df[bool_cols].astype(int)
  
     remaining_categorical = df.select_dtypes(include=["object", "category"]).columns
-
     if not remaining_categorical.empty:
         print("Columns left as string/object dtype "f"(not encoded): {list(remaining_categorical)}") 
     
     if metadata_json_path:
-        metadata_json_path.parent.mkdir(
-            parents=True,
-            exist_ok=True,
-        ) 
+        metadata_json_path.parent.mkdir(parents=True, exist_ok=True,) 
         if ohe_metadata_registry:
-
             with open(metadata_json_path, "w", encoding="utf-8",) as f:
                 json.dump(ohe_metadata_registry, f, indent=4,)
             print(f"OHE metadata successfully saved to: "f"{metadata_json_path}")
  
         if missing_value_metadata_registry:
-
             fill_missing_path = (metadata_json_path.parent/ "fill_missing.json")
-
             with open(fill_missing_path, "w", encoding="utf-8") as f:
                 json.dump(missing_value_metadata_registry, f, indent=4, default=str)
 
@@ -372,15 +361,11 @@ def _encode_column_ohe(
     dummies = pd.get_dummies(
         df[column], prefix=column, drop_first=drop_first, dtype=int
     )
-
     dropped_feature = categories[0] if (drop_first and categories) else None
-
     metadata = {
         "original_column": column,
         "all_categories": categories,
         "encoded_columns": list(dummies.columns),
         "dropped_baseline_category": dropped_feature,
     }
-
     return dummies, metadata
-

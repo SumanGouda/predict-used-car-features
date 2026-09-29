@@ -1,6 +1,6 @@
 from pathlib import Path
 from functools import partial
-from utils.cleaning import (
+from utils.data_cleaning import (
     clean_drive_type, clean_turbo_charger, clean_price, 
     clean_car_name, clean_emission_norm, clean_ownership,
 )
@@ -17,44 +17,44 @@ PROCESS_RAW_DATA = True
 # ==========================================
 # Mileage Paths
 FEATURES_FILE_MILEAGE = (
-    PROJECT_ROOT / "predictions" / "mileage" / "data" / "features.txt"
+    PROJECT_ROOT / "predictions" / "data" / "mileage" / "features.txt"
 )
 OUTPUT_FILE_MILEAGE = (
-    PROJECT_ROOT / "predictions" / "mileage" / "data" / "raw" / "data.csv"
+    PROJECT_ROOT / "predictions" / "data" / "mileage" / "raw" / "data.csv"
 )
 PROCESSED_FILE_MILEAGE = (
-    PROJECT_ROOT / "predictions" / "mileage" / "data" / "processed" / "data.csv"
+    PROJECT_ROOT / "predictions" / "data" / "mileage" / "processed" / "data.csv"
 )
 OHE_METADATA_FILE_MILEAGE = (
-    PROJECT_ROOT / "predictions" / "mileage" / "model" / "ohe_metadata.json"
+    PROJECT_ROOT / "predictions" / "data" / "mileage" / "processed" / "metadata" / "ohe_metadata.json"
 )
 
 # Power Paths
 FEATURES_FILE_POWER = (
-    PROJECT_ROOT / "predictions" / "power" / "data" / "features.txt"
+    PROJECT_ROOT / "predictions" / "data" / "power" / "features.txt"
 )
 OUTPUT_FILE_POWER = (
-    PROJECT_ROOT / "predictions" / "power" / "data" / "raw" / "data.csv"
+    PROJECT_ROOT / "predictions" / "data" / "power" / "raw" / "data.csv"
 )
 PROCESSED_FILE_POWER = (
-    PROJECT_ROOT / "predictions" / "power" / "data" / "processed" / "data.csv"
+    PROJECT_ROOT / "predictions" / "data" / "power" / "processed" / "data.csv"
 )
 OHE_METADATA_FILE_POWER = (
-    PROJECT_ROOT / "predictions" / "power" / "model" / "ohe_metadata.json"
+    PROJECT_ROOT / "predictions" / "data" / "power" / "processed" / "metadata" / "ohe_metadata.json"
 )
 
 # Price Paths
 FEATURES_FILE_PRICE = (
-    PROJECT_ROOT / "predictions" / "price" / "data" / "features.txt"
+    PROJECT_ROOT / "predictions" / "data" / "price" / "features.txt"
 )
 OUTPUT_FILE_PRICE = (
-    PROJECT_ROOT / "predictions" / "price" / "data" / "raw" / "data.csv"
+    PROJECT_ROOT / "predictions" / "data" / "price" / "raw" / "data.csv"
 )
 PROCESSED_FILE_PRICE = (
-    PROJECT_ROOT / "predictions" / "price" / "data" / "processed" / "data.csv"
+    PROJECT_ROOT / "predictions" / "data" / "data" / "processed" / "data.csv"
 )
 OHE_METADATA_FILE_PRICE = (
-    PROJECT_ROOT / "predictions" / "price" / "model" / "ohe_metadata.json"
+    PROJECT_ROOT / "predictions" / "model" / "price" / "ohe_metadata.json"
 )
 
 # ==========================================
@@ -70,6 +70,7 @@ FEATURE_REGEX_PATTERNS = {
     "Seats": (r"(\d+)", float),
     "Ground Clearance Unladen": (r"(\d+\.?\d*)", float),
     "Transmission Type": {"Automatic": 1, "Manual": 0},
+    "Transmission": {"Automatic": 1, "Manual": 0},
 }
 
 EMISSION_NORM_ORDINAL_MAP = {
@@ -108,6 +109,7 @@ FUNC_CLEAN_DICT = {
 # ==========================================
 # Model Training Settings: Mileage
 # ==========================================
+MILEAGE_EXPERIMENT_NAME = "Mileage_Prediction"
 from sklearn.ensemble import RandomForestRegressor
 MILEAGE_MODEL = RandomForestRegressor(random_state=42)
 MILEAGE_PARAM_GRID = {
@@ -115,14 +117,22 @@ MILEAGE_PARAM_GRID = {
     "max_depth": [5, 10, None],
     "min_samples_split": [2, 5],
 }
-TARGET_COLUMN = "Mileage"
-DATASET = PROCESSED_FILE_MILEAGE
-DATASET = PROCESSED_FILE_MILEAGE
+MILEAGE_TARGET_COLUMN = "Mileage"
+MILEAGE_DATASET = PROCESSED_FILE_MILEAGE 
 
 # ==========================================
 # Model Training Settings: Power
 # ==========================================
-
+POWER_EXPERIMENT_NAME = "Power_Prediction"
+from sklearn.ensemble import RandomForestRegressor
+POWER_MODEL = RandomForestRegressor(random_state=42)
+POWER_PARAM_GRID = {
+    "n_estimators": [100, 200],
+    "max_depth": [5, 10, None],
+    "min_samples_split": [2, 5],
+}
+POWER_TARGET_COLUMN = "Power"
+POWER_DATASET = PROCESSED_FILE_POWER
 
 # ==========================================
 # Model Training Settings: Price

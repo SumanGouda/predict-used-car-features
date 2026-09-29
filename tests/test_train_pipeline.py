@@ -1,7 +1,7 @@
 import os
 import mlflow
 from xgboost import XGBRegressor
-from predictions.mileage.pipeline.train_model_pipeline import run_pipeline
+from predictions.core.train_model_pipeline import run_pipeline
 
 
 def test_run_pipeline_end_to_end(sample_dataset, temp_mlruns_dir):

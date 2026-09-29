@@ -8,19 +8,16 @@ from sklearn.model_selection import train_test_split
 
 # Import custom module utilities
 from predictions.core.evaluation import evaluate_model
-from predictions.core.train_model import train_model
-from utils.visualization import generate_performance_plots
-from config.settings import MILEAGE_MODEL, MILEAGE_PARAM_GRID, TARGET_COLUMN, DATASET
+from predictions.core.training import train_model
+from utils.visualization import generate_performance_plots 
 
-os.environ["MLFLOW_ALLOW_FILE_STORE"] = "true"
-
-def run_pipeline(model, dataset, grid_params, target):
-    project_root = Path(__file__).resolve().parents[3]  
+def run_pipeline(model, dataset, grid_params, target, exp):
+    project_root = Path(__file__).resolve().parents[2]  
     mlruns_dir = project_root / "mlruns" 
 
     mlflow.set_tracking_uri(mlruns_dir.as_uri())
 
-    mlflow.set_experiment("Car_Feature_Prediction")
+    mlflow.set_experiment(exp)
 
     with mlflow.start_run(run_name=f"Predict_{target}") as run:
         print(f"Active MLflow Run ID: {run.info.run_id}")
@@ -76,6 +73,3 @@ def run_pipeline(model, dataset, grid_params, target):
             serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE
         )
         print("Pipeline execution completed successfully.")
-
-if __name__ == "__main__":
-    run_pipeline(MILEAGE_MODEL, DATASET, MILEAGE_PARAM_GRID, TARGET_COLUMN)

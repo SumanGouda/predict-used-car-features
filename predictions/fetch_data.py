@@ -3,29 +3,36 @@ import sqlite3
 import pandas as pd
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
+from utils.model_helper import get_and_validate_features
+from utils.data_cleaning import apply_cleaning_pipeline
 from config.settings import (
     DB_FILE,
     FEATURE_REGEX_PATTERNS,
-    FEATURES_FILE_POWER,
     FUNC_CLEAN_DICT,
     OHE_FEATURES,
     OHE_METADATA_FILE_POWER,
     OUTPUT_FILE_POWER,
     PROCESS_RAW_DATA,
     PROCESSED_FILE_POWER,
+    FEATURES_FILE_POWER,
 )
-from utils.cleaning import apply_cleaning_pipeline
-from utils.model_helper import get_and_validate_features
 
-def main(
-features_txt_path: str, 
-db_path: str, 
-output_csv_path: str
-) -> pd.DataFrame:
+# Global Config Arguments (Removed trailing commas)
+features_txt_path   = FEATURES_FILE_POWER
+db_path             = DB_FILE
+csv_file            = OUTPUT_FILE_POWER
+clean_dict          = FEATURE_REGEX_PATTERNS
+func_clean_dict     = FUNC_CLEAN_DICT
+ohe_features        = OHE_FEATURES
+metadata_json       = OHE_METADATA_FILE_POWER
+output_path         = PROCESSED_FILE_POWER
+
+
+def main(features_txt_path: str, db_path: str, output_csv_path: str) -> pd.DataFrame:
     """Reads target features from features.txt, extracts them from every city table
     in the SQLite database, combines everything into a single dataset, and exports to CSV.
     """
@@ -91,35 +98,23 @@ def _extract_table(
     except Exception as e:
         print(f"Error querying table '{table}': {e}")
         return pd.DataFrame()
-    
 
-def process(
-    csv_file: str,
-    regex_clean_dict: dict,
-    func_clean_dict: dict,
-    ohe_features: list,
-    metadata_json: str,
-    output_path: str,
-):
+
+def process(csv_file: str, clean_dict: dict, func_clean_dict: dict, ohe_features: list, metadata_json: str, output_path: str):
     csv_file = Path(csv_file)
     metadata_json = Path(metadata_json)
     output_path = Path(output_path)
 
     df = pd.read_csv(csv_file)
-    df = apply_cleaning_pipeline(df, regex_clean_dict, func_clean_dict, ohe_features, metadata_json)
-
+    df = apply_cleaning_pipeline(df, clean_dict, func_clean_dict, ohe_features, metadata_json)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+ 
     df.to_csv(output_path, index=False)
 
 
 if __name__ == "__main__":
     if PROCESS_RAW_DATA:
-        main(FEATURES_FILE_POWER, DB_FILE, OUTPUT_FILE_POWER)
-        process(
-            csv_file=OUTPUT_FILE_POWER,
-            regex_clean_dict=FEATURE_REGEX_PATTERNS,
-            func_clean_dict=FUNC_CLEAN_DICT,
-            ohe_features=OHE_FEATURES,
-            metadata_json=OHE_METADATA_FILE_POWER,
-            output_path=PROCESSED_FILE_POWER,
-        )
-
+        main(features_txt_path, db_path, csv_file)
+        
+    process(csv_file, clean_dict, func_clean_dict, ohe_features, metadata_json, output_path)
+    
