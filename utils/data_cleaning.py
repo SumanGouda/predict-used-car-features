@@ -271,7 +271,7 @@ def clean_car_name(value: Any) -> tuple[str, str]:
 
     return brand, model
 
-def apply_cleaning_pipeline(
+def cleaning_pipeline(
     df: pd.DataFrame,
     regex_clean_dict: dict,
     func_clean_dict: dict,

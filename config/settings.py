@@ -9,8 +9,7 @@ from utils.data_cleaning import (
 # System & Path Configurations
 # ==========================================
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DB_FILE = PROJECT_ROOT / "database" / "car_database.db"
-PROCESS_RAW_DATA = True
+DB_FILE = PROJECT_ROOT / "database" / "car_database.db" 
 
 # ==========================================
 # Data Processing Paths
@@ -109,30 +108,30 @@ FUNC_CLEAN_DICT = {
 # ==========================================
 # Model Training Settings: Mileage
 # ==========================================
-MILEAGE_EXPERIMENT_NAME = "Mileage_Prediction"
+EXPERIMENT_NAME_MILEAGE = "Mileage_Prediction"
 from sklearn.ensemble import RandomForestRegressor
-MILEAGE_MODEL = RandomForestRegressor(random_state=42)
-MILEAGE_PARAM_GRID = {
+MODEL_MILEAGE = RandomForestRegressor(random_state=42)
+PARAM_GRID_MILEAGE = {
     "n_estimators": [100, 200],
     "max_depth": [5, 10, None],
     "min_samples_split": [2, 5],
 }
-MILEAGE_TARGET_COLUMN = "Mileage"
-MILEAGE_DATASET = PROCESSED_FILE_MILEAGE 
+TARGET_COLUMN_MILEAGE = "Mileage"
+DATASET_MILEAGE = PROCESSED_FILE_MILEAGE 
 
 # ==========================================
 # Model Training Settings: Power
 # ==========================================
-POWER_EXPERIMENT_NAME = "Power_Prediction"
+EXPERIMENT_NAME_POWER = "Power_Prediction"
 from sklearn.ensemble import RandomForestRegressor
-POWER_MODEL = RandomForestRegressor(random_state=42)
-POWER_PARAM_GRID = {
+MODEL_POWER = RandomForestRegressor(random_state=42)
+PARAM_GRID_POWER = {
     "n_estimators": [100, 200],
     "max_depth": [5, 10, None],
     "min_samples_split": [2, 5],
 }
-POWER_TARGET_COLUMN = "Power"
-POWER_DATASET = PROCESSED_FILE_POWER
+TARGET_COLUMN_POWER = "Power"
+DATASET_POWER = PROCESSED_FILE_POWER
 
 # ==========================================
 # Model Training Settings: Price

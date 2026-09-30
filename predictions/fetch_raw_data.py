@@ -1,40 +1,23 @@
-import sys
 import sqlite3
-import pandas as pd
+import sys
 from pathlib import Path
+import pandas as pd
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.append(str(PROJECT_ROOT))
 
-from utils.model_helper import get_and_validate_features
-from utils.data_cleaning import apply_cleaning_pipeline
 from config.settings import (
     DB_FILE,
-    FEATURE_REGEX_PATTERNS,
-    FUNC_CLEAN_DICT,
-    OHE_FEATURES,
-    OHE_METADATA_FILE_POWER,
-    OUTPUT_FILE_POWER,
-    PROCESS_RAW_DATA,
-    PROCESSED_FILE_POWER,
-    FEATURES_FILE_POWER,
+    FEATURES_FILE_MILEAGE,
+    OUTPUT_FILE_MILEAGE,
 )
-
-# Global Config Arguments (Removed trailing commas)
-features_txt_path   = FEATURES_FILE_POWER
-db_path             = DB_FILE
-csv_file            = OUTPUT_FILE_POWER
-clean_dict          = FEATURE_REGEX_PATTERNS
-func_clean_dict     = FUNC_CLEAN_DICT
-ohe_features        = OHE_FEATURES
-metadata_json       = OHE_METADATA_FILE_POWER
-output_path         = PROCESSED_FILE_POWER
+from utils.model_helper import get_and_validate_features
 
 
-def main(features_txt_path: str, db_path: str, output_csv_path: str) -> pd.DataFrame:
+def fetch_raw_data(features_txt_path: str | Path, db_path: str | Path, output_csv_path: str | Path) -> pd.DataFrame:
     """Reads target features from features.txt, extracts them from every city table
-    in the SQLite database, combines everything into a single dataset, and exports to CSV.
+    in the SQLite database, combines everything into a single dataset, and exports to raw CSV.
     """
     db_file = Path(db_path)
     output_file = Path(output_csv_path)
@@ -72,7 +55,7 @@ def main(features_txt_path: str, db_path: str, output_csv_path: str) -> pd.DataF
     combined_df.to_csv(output_file, index=False)
     print(f"Loaded {len(target_columns)} features from '{features_file.name}'.")
     print(f"Successfully extracted {len(combined_df)} records across {len(tables)} city tables.")
-    print(f"Warehouse dataset saved to: {output_file}")
+    print(f"Warehouse raw dataset saved to: {output_file}")
 
     return combined_df
 
@@ -80,7 +63,7 @@ def main(features_txt_path: str, db_path: str, output_csv_path: str) -> pd.DataF
 def _extract_table(
     conn: sqlite3.Connection, cursor: sqlite3.Cursor, table: str, target_columns: list
 ) -> pd.DataFrame:
-    """Selects the target columns from a single table, aliasing missing columns to NULL."""
+    """Selects target columns from a single table, aliasing missing columns to NULL."""
     cursor.execute(f"PRAGMA table_info('{table}');")
     db_cols_map = {col[1].strip().lower(): col[1] for col in cursor.fetchall()}
 
@@ -100,21 +83,7 @@ def _extract_table(
         return pd.DataFrame()
 
 
-def process(csv_file: str, clean_dict: dict, func_clean_dict: dict, ohe_features: list, metadata_json: str, output_path: str):
-    csv_file = Path(csv_file)
-    metadata_json = Path(metadata_json)
-    output_path = Path(output_path)
-
-    df = pd.read_csv(csv_file)
-    df = apply_cleaning_pipeline(df, clean_dict, func_clean_dict, ohe_features, metadata_json)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
- 
-    df.to_csv(output_path, index=False)
-
-
-if __name__ == "__main__":
-    if PROCESS_RAW_DATA:
-        main(features_txt_path, db_path, csv_file)
+if __name__ == "__main__": 
+    print("Fetching fresh raw data from SQLite database...")
+    fetch_raw_data(FEATURES_FILE_MILEAGE, DB_FILE, OUTPUT_FILE_MILEAGE) 
         
-    process(csv_file, clean_dict, func_clean_dict, ohe_features, metadata_json, output_path)
-    
