@@ -1,9 +1,0 @@
-Engine
-No. of Cylinders
-Drive Type
-Transmission
-Fuel Type
-Engine Type
-Emission Norm Compliance 
-Valves Per Cylinder
-Power

@@ -1,8 +1,0 @@
-Mileage
-Engine
-Kerb Weight
-Fuel
-Transmission Type
-Power
-No. of Cylinders
-Registration Year

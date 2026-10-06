@@ -7,31 +7,46 @@ env/
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 
 # Environment & Secret Files
 .env
+.env.local
+
+# Scraped Data, Databases & Datasets
+*.json
+*.jsonl
+*.db
+*.sqlite
+*.sqlite3
+database/
+data/
+*.zip
+kaggle_car_dataset.zip
+
+# Link & Tracking Text Files
+car_links_*.txt
+*.log
+logs/
+
+# Jupyter Notebooks
+notebooks/
+.ipynb_checkpoints/ 
 
 # Model Files & Weights
 *.pkl
 *.joblib
 
-# Datasets & Archive Files
-*.json
-*.zip
-kaggle_car_dataset.zip
-
-# Jupyter Notebook Checkpoints
-.ipynb_checkpoints/
-
-# Development & Test Directories
-test/
-
 # IDE & Editor Files
 .vscode/
-
-# Logs
-*.log
+.idea/
 
 # Operating System Files
 .DS_Store
 Thumbs.db
+
+# Project-specific folders
+web_scraping_old/
+ANN/
+trash/
+mlruns/
