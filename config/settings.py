@@ -125,13 +125,13 @@ DATASET_MILEAGE = PROCESSED_FILE_MILEAGE
 # Model Training Settings: Power
 # ==========================================
 EXPERIMENT_NAME_POWER = "Power_Prediction"
-from catboost import CatBoostRegressor
-MODEL_POWER = CatBoostRegressor(random_state=42, verbose=0)
+from sklearn.tree import DecisionTreeRegressor
+MODEL_POWER = DecisionTreeRegressor(random_state=42)
 PARAM_GRID_POWER = {
-    "iterations": [200, 500],
-    "learning_rate": [0.03, 0.1],
-    "depth": [4, 6, 8],
-    "l2_leaf_reg": [1, 3, 5],
+    "criterion": ["squared_error", "absolute_error"],
+    "max_depth": [None, 5, 10, 15, 20],
+    "min_samples_split": [2, 5, 10],
+    "min_samples_leaf": [1, 2, 4],
 }
 TARGET_COLUMN_POWER = "Power"
 DATASET_POWER = PROCESSED_FILE_POWER
