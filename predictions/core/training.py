@@ -24,31 +24,37 @@ def tqdm_joblib(tqdm_object):
         tqdm_object.close()
 
 
-def train_model(
-    train_df,
-    val_df,
-    model,
-    target_column,
-    grid_search_params=None,
-):
-    X_train = train_df.drop(columns=[target_column])
+def train_model(train_df, val_df, model, target_column, grid_search_params=None):
+    X_train = train_df.drop(columns=[target_column]).copy()
     y_train = train_df[target_column]
 
-    X_val = val_df.drop(columns=[target_column])
+    X_val = val_df.drop(columns=[target_column]).copy()
     y_val = val_df[target_column]
+
+    # 1. Identify categorical features and cast string/object types to 'category'
+    cat_cols = X_train.select_dtypes(include=["object", "string", "category"]).columns.tolist()
+    if cat_cols:
+        X_train[cat_cols] = X_train[cat_cols].astype("category")
+        X_val[cat_cols] = X_val[cat_cols].astype("category")
+
+    # 2. Build fit_params for CatBoost
+    fit_params = {}
+    if type(model).__name__.startswith("CatBoost") and cat_cols:
+        fit_params["cat_features"] = cat_cols
 
     best_params = {}
 
     if grid_search_params:
+        # Use n_jobs=1 for CatBoost to avoid multiprocessing serialization locks
         grid_search = GridSearchCV(
             estimator=model,
             param_grid=grid_search_params,
             cv=5,
             scoring="neg_root_mean_squared_error",
-            n_jobs=-1,
-            verbose=0, 
+            n_jobs=1,
+            verbose=0,
         )
- 
+
         num_combinations = len(
             list(
                 grid_search._get_param_iterator()
@@ -58,11 +64,11 @@ def train_model(
         )
         total_fits = num_combinations * grid_search.cv
 
-        # Run Grid Search wrapped inside tqdm progress bar
+        # Run Grid Search
         with tqdm_joblib(
             tqdm(desc="Training GridSearch Models", total=total_fits)
         ):
-            grid_search.fit(X_train, y_train)
+            grid_search.fit(X_train, y_train, **fit_params)
 
         best_model = grid_search.best_estimator_
         best_params = grid_search.best_params_
@@ -70,7 +76,7 @@ def train_model(
     else:
         # Standard fit with simple tqdm progress indicator
         with tqdm(total=1, desc="Fitting Single Model") as pbar:
-            model.fit(X_train, y_train)
+            model.fit(X_train, y_train, **fit_params)
             pbar.update(1)
         best_model = model
 

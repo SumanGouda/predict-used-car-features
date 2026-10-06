@@ -3,6 +3,7 @@ from functools import partial
 from utils.data_cleaning import (
     clean_drive_type, clean_turbo_charger, clean_price, 
     clean_car_name, clean_emission_norm, clean_ownership,
+    clean_engine_type
 )
 
 # ==========================================
@@ -102,6 +103,7 @@ FUNC_CLEAN_DICT = {
     "Price": clean_price,
     "Emission Norm Compliance": partial(clean_emission_norm, map_dict=EMISSION_NORM_ORDINAL_MAP),
     "car_name": (clean_car_name, ["brand", "model"]),
+    "Engine Type": (clean_engine_type, ["engine_shape", "engine_volume"]),
     "Ownership": partial(clean_ownership, map_dict=OWNERSHIP_MAP),
 }
 
@@ -123,12 +125,13 @@ DATASET_MILEAGE = PROCESSED_FILE_MILEAGE
 # Model Training Settings: Power
 # ==========================================
 EXPERIMENT_NAME_POWER = "Power_Prediction"
-from sklearn.ensemble import RandomForestRegressor
-MODEL_POWER = RandomForestRegressor(random_state=42)
+from catboost import CatBoostRegressor
+MODEL_POWER = CatBoostRegressor(random_state=42, verbose=0)
 PARAM_GRID_POWER = {
-    "n_estimators": [100, 200],
-    "max_depth": [5, 10, None],
-    "min_samples_split": [2, 5],
+    "iterations": [200, 500],
+    "learning_rate": [0.03, 0.1],
+    "depth": [4, 6, 8],
+    "l2_leaf_reg": [1, 3, 5],
 }
 TARGET_COLUMN_POWER = "Power"
 DATASET_POWER = PROCESSED_FILE_POWER

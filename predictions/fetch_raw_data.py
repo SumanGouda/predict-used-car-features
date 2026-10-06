@@ -9,8 +9,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from config.settings import (
     DB_FILE,
-    FEATURES_FILE_MILEAGE,
-    OUTPUT_FILE_MILEAGE,
+    FEATURES_FILE_POWER,
+    OUTPUT_FILE_POWER,
 )
 from utils.model_helper import get_and_validate_features
 
@@ -32,11 +32,9 @@ def fetch_raw_data(features_txt_path: str | Path, db_path: str | Path, output_cs
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
         )
         tables = [row[0] for row in cursor.fetchall()]
-
         if not tables:
             print("No tables found in the database.")
-            return pd.DataFrame()
-
+            return pd.DataFrame() 
         all_data = []
         for table in tables:
             df_table = _extract_table(conn, cursor, table, target_columns)
@@ -73,9 +71,7 @@ def _extract_table(
         else f'NULL AS "{col}"'
         for col in target_columns
     ]
-
     query = f"SELECT {', '.join(select_clauses)} FROM \"{table}\""
-
     try:
         return pd.read_sql_query(query, conn)
     except Exception as e:
@@ -85,5 +81,5 @@ def _extract_table(
 
 if __name__ == "__main__": 
     print("Fetching fresh raw data from SQLite database...")
-    fetch_raw_data(FEATURES_FILE_MILEAGE, DB_FILE, OUTPUT_FILE_MILEAGE) 
+    fetch_raw_data(FEATURES_FILE_POWER, DB_FILE, OUTPUT_FILE_POWER) 
         
