@@ -25,8 +25,8 @@ OUTPUT_FILE_MILEAGE = (
 PROCESSED_FILE_MILEAGE = (
     PROJECT_ROOT / "predictions" / "data" / "mileage" / "processed" / "data.csv"
 )
-OHE_METADATA_FILE_MILEAGE = (
-    PROJECT_ROOT / "predictions" / "data" / "mileage" / "processed" / "metadata" / "ohe_metadata.json"
+ENC_METADATA_FILE_MILEAGE = (
+    PROJECT_ROOT / "predictions" / "data" / "mileage" / "processed" / "metadata" / "encoding_metadata.json"
 )
 
 # Power Paths
@@ -39,8 +39,8 @@ OUTPUT_FILE_POWER = (
 PROCESSED_FILE_POWER = (
     PROJECT_ROOT / "predictions" / "data" / "power" / "processed" / "data.csv"
 )
-OHE_METADATA_FILE_POWER = (
-    PROJECT_ROOT / "predictions" / "data" / "power" / "processed" / "metadata" / "ohe_metadata.json"
+ENC_METADATA_FILE_POWER = (
+    PROJECT_ROOT / "predictions" / "data" / "power" / "processed" / "metadata" / "encoding_metadata.json"
 )
 
 # Price Paths
@@ -53,8 +53,8 @@ OUTPUT_FILE_PRICE = (
 PROCESSED_FILE_PRICE = (
     PROJECT_ROOT / "predictions" / "data" / "data" / "processed" / "data.csv"
 )
-OHE_METADATA_FILE_PRICE = (
-    PROJECT_ROOT / "predictions" / "model" / "price" / "ohe_metadata.json"
+ENC_METADATA_FILE_PRICE = (
+    PROJECT_ROOT / "predictions" / "model" / "price" / "encoding_metadata.json"
 )
 
 # ==========================================
@@ -94,8 +94,10 @@ OWNERSHIP_MAP = {
     "Fourth Owner": 4,
     "Fifth Owner": 5,
 }
-
-OHE_FEATURES = ["Fuel", "Transmission", "Drive Type", "Turbo Charger"]
+ENCODING_MAP={
+    "ohe_encoding" : ["Fuel", "Transmission", "Drive Type", "Turbo Charger"],
+    "freq_encoding" : ['engine_shape', 'engine_volume']
+}
 
 FUNC_CLEAN_DICT = {
     "Drive Type": clean_drive_type,
@@ -103,7 +105,7 @@ FUNC_CLEAN_DICT = {
     "Price": clean_price,
     "Emission Norm Compliance": partial(clean_emission_norm, map_dict=EMISSION_NORM_ORDINAL_MAP),
     "car_name": (clean_car_name, ["brand", "model"]),
-    "Engine Type": (clean_engine_type, ["engine_shape", "engine_volume"]),
+    "Engine": (clean_engine_type, ["engine_shape", "engine_volume"]),
     "Ownership": partial(clean_ownership, map_dict=OWNERSHIP_MAP),
 }
 

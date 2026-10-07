@@ -7,10 +7,10 @@ if str(PROJECT_ROOT) not in sys.path:
 from config.settings import (
     FEATURE_REGEX_PATTERNS,
     FUNC_CLEAN_DICT,
-    OHE_FEATURES,
-    OHE_METADATA_FILE_POWER,
-    OUTPUT_FILE_POWER,
-    PROCESSED_FILE_POWER,
+    ENCODING_MAP,
+    ENC_METADATA_FILE_MILEAGE,
+    OUTPUT_FILE_MILEAGE,
+    PROCESSED_FILE_MILEAGE,
 )
 from utils.data_cleaning import cleaning_pipeline
 from utils.eda import eda
@@ -19,7 +19,7 @@ from utils.pre_preprocessing import apply_preprocessing
 
 def process(
     csv_file: str | Path, clean_dict: dict, func_clean_dict: dict, 
-    ohe_features: list, metadata_json: str | Path, output_path: str | Path,
+    ENCODING_MAP: dict, metadata_json: str | Path, output_path: str | Path,
 ) -> pd.DataFrame:
     """
         Cleans raw CSV data, generates EDA diagnostic charts, applies post-EDA
@@ -31,7 +31,7 @@ def process(
     if any(not p.exists() for p in (csv_file, metadata_json, output_path)):
         raise FileNotFoundError("One or more required files/paths do not exist. Run fetch_data.py first.")
     df = pd.read_csv(csv_file)
-    df = cleaning_pipeline(df, clean_dict, func_clean_dict, ohe_features, metadata_json)
+    df = cleaning_pipeline(df, clean_dict, func_clean_dict, ENCODING_MAP, metadata_json)
  
     eda_output_dir = metadata_json.parent / "eda_reports"
     eda(df, eda_output_dir) 
@@ -47,10 +47,10 @@ def process(
 
 if __name__ == "__main__":
     process(
-        csv_file=OUTPUT_FILE_POWER,
+        csv_file=OUTPUT_FILE_MILEAGE,
         clean_dict=FEATURE_REGEX_PATTERNS,
         func_clean_dict=FUNC_CLEAN_DICT,
-        ohe_features=OHE_FEATURES,
-        metadata_json=OHE_METADATA_FILE_POWER,
-        output_path=PROCESSED_FILE_POWER,
+        ENCODING_MAP=ENCODING_MAP,
+        metadata_json=ENC_METADATA_FILE_MILEAGE,
+        output_path=PROCESSED_FILE_MILEAGE,
     )

@@ -283,10 +283,7 @@ def clean_car_name(value: Any) -> tuple[str, str]:
 
     return brand, model
 
-def cleaning_pipeline(
-    df: pd.DataFrame, regex_clean_dict: dict, func_clean_dict: dict, 
-    ohe_features: list, metadata_json_path: Path,
-) -> pd.DataFrame:
+def cleaning_pipeline(df: pd.DataFrame, regex_clean_dict: dict, func_clean_dict: dict, encoding_map: dict, metadata_json_path: Path,) -> pd.DataFrame:
 
     """
         Cleans dataframe columns dynamically using regex extraction,
@@ -299,8 +296,8 @@ def cleaning_pipeline(
         XGBoost native categorical handling) and reported.
     """
     df = df.copy()
-    missing_value_metadata_registry = {}
-    ohe_metadata_registry = {} 
+    fill_missing_meta_registry = {}
+    encoding_meta_registry = {} 
 
     for col in list(df.columns):
         if col in regex_clean_dict:
@@ -322,13 +319,25 @@ def cleaning_pipeline(
             else:
                 df[col] = df[col].apply(rule)
  
-    for col in ohe_features:
-        if col not in df.columns:
-            continue 
-        dummies, meta = _encode_column_ohe(df, column=col, drop_first=True)
-        ohe_metadata_registry[col] = meta
-        df = pd.concat([df.drop(columns=[col]), dummies], axis=1,)
+    for encoding_type, columns in encoding_map.items():
+        for col in columns:
+            if col not in df.columns:
+                continue
 
+            if encoding_type == "ohe_encoding":
+                dummies, meta = _encode_column_ohe(df, column=col, drop_first=True)
+                df = pd.concat([df.drop(columns=[col]), dummies], axis=1)
+                encoding_meta_registry[col] = {
+                    "encoding_type": "one_hot",
+                    "metadata": meta,
+                }
+            elif encoding_type == "freq_encoding":
+                df, meta = _apply_frequency_encoding(df, column_name=col, normalize=False, drop_original=True,)
+                encoding_meta_registry[col] = {
+                    "encoding_type": "frequency",
+                    "metadata": meta[col],
+                }
+    
     bool_cols = df.select_dtypes(include=["bool"]).columns
     if not bool_cols.empty:
         df[bool_cols] = df[bool_cols].astype(int)
@@ -337,35 +346,29 @@ def cleaning_pipeline(
         if col not in df.columns:
             continue
         df, metadata = handle_missing_values(df, col)
-        missing_value_metadata_registry[col] = metadata
+        fill_missing_meta_registry[col] = metadata
 
-    remaining_categorical = df.select_dtypes(
-        include=["object", "category"]
-    ).columns
+    remaining_categorical = df.select_dtypes(include=["object", "category"]).columns
     if not remaining_categorical.empty:
-        print(
-            "Columns left as string/object dtype "
-            f"(not encoded): {list(remaining_categorical)}"
-        )
+        print("Columns left as string/object dtype " f"(not encoded): {list(remaining_categorical)}")
 
     if metadata_json_path:
-        metadata_json_path.parent.mkdir(parents=True, exist_ok=True,)
-        if ohe_metadata_registry:
-            with open(metadata_json_path, "w", encoding="utf-8",) as f:
-                json.dump(ohe_metadata_registry, f, indent=4,)
-            print("OHE metadata successfully saved to: " f"{metadata_json_path}")
+        metadata_json_path.parent.mkdir(parents=True, exist_ok=True)
 
-        if missing_value_metadata_registry:
-            fill_missing_path = (metadata_json_path.parent / "fill_missing.json")
+        if encoding_meta_registry:
+            with open(metadata_json_path, "w", encoding="utf-8") as f:
+                json.dump(encoding_meta_registry, f, indent=4, default=str)
+            print(f"Encoding metadata successfully saved to: {metadata_json_path}")
+
+        if fill_missing_meta_registry:
+            fill_missing_path = metadata_json_path.parent / "fill_missing.json"
             with open(fill_missing_path, "w", encoding="utf-8") as f:
-                json.dump(missing_value_metadata_registry, f, indent=4, default=str,) 
-            print("Missing-value metadata successfully saved to: " f"{fill_missing_path}")
+                json.dump(fill_missing_meta_registry, f, indent=4, default=str)
+            print(f"Missing-value metadata successfully saved to: {fill_missing_path}")
 
     return df
 
-def _encode_column_ohe(
-    df: pd.DataFrame, column: str, drop_first: bool = True
-) -> tuple[pd.DataFrame, dict]:
+def _encode_column_ohe(df: pd.DataFrame, column: str, drop_first: bool = True) -> tuple[pd.DataFrame, dict]:
     """Generates one-hot encoded dummies and tracks category mappings and dropped reference level."""
     categories = sorted(df[column].dropna().unique().tolist())
     dummies = pd.get_dummies(
@@ -379,6 +382,24 @@ def _encode_column_ohe(
         "dropped_baseline_category": dropped_feature,
     }
     return dummies, metadata
+
+def _apply_frequency_encoding(df: pd.DataFrame, column_name: str | list[str], normalize: bool = False, drop_original: bool = True,) -> tuple[pd.DataFrame, dict]:
+    """Applies frequency encoding to specified categorical feature column(s) and tracks metadata and frequency mappings."""
+    df = df.copy()
+    cols = [column_name] if isinstance(column_name, str) else column_name
+    metadata = {}
+    for col in cols:
+        freq_map = df[col].value_counts(normalize=normalize).to_dict()
+        target_col_name = col if drop_original else f"{col}_freq"
+        df[target_col_name] = df[col].map(freq_map)
+        metadata[col] = {
+            "original_column": col,
+            "encoded_column": target_col_name,
+            "normalize": normalize,
+            "frequency_map": freq_map,
+            "unseen_default_value": 0.0 if normalize else 0,
+        }
+    return df, metadata
 
 def clean_engine_type(value: Any) -> str:
     if pd.isna(value) or str(value).strip().lower() in ["nan", "none", ""]:
