@@ -3,7 +3,7 @@ from functools import partial
 from utils.data_cleaning import (
     clean_drive_type, clean_turbo_charger, clean_price, 
     clean_car_name, clean_emission_norm, clean_ownership,
-    clean_engine_type
+    engine_shape
 )
 
 # ==========================================
@@ -96,7 +96,7 @@ OWNERSHIP_MAP = {
 }
 ENCODING_MAP={
     "ohe_encoding" : ["Fuel", "Transmission", "Drive Type", "Turbo Charger"],
-    "freq_encoding" : ['engine_shape', 'engine_volume']
+    "freq_encoding" : ['Engine Type']
 }
 
 FUNC_CLEAN_DICT = {
@@ -105,7 +105,7 @@ FUNC_CLEAN_DICT = {
     "Price": clean_price,
     "Emission Norm Compliance": partial(clean_emission_norm, map_dict=EMISSION_NORM_ORDINAL_MAP),
     "car_name": (clean_car_name, ["brand", "model"]),
-    "Engine": (clean_engine_type, ["engine_shape", "engine_volume"]),
+    "Engine Type": engine_shape,
     "Ownership": partial(clean_ownership, map_dict=OWNERSHIP_MAP),
 }
 
@@ -127,13 +127,12 @@ DATASET_MILEAGE = PROCESSED_FILE_MILEAGE
 # Model Training Settings: Power
 # ==========================================
 EXPERIMENT_NAME_POWER = "Power_Prediction"
-from sklearn.tree import DecisionTreeRegressor
-MODEL_POWER = DecisionTreeRegressor(random_state=42)
+from sklearn.ensemble import RandomForestRegressor
+MODEL_POWER = RandomForestRegressor(random_state=42)
 PARAM_GRID_POWER = {
-    "criterion": ["squared_error", "absolute_error"],
-    "max_depth": [None, 5, 10, 15, 20],
-    "min_samples_split": [2, 5, 10],
-    "min_samples_leaf": [1, 2, 4],
+    "n_estimators": [100, 200],
+    "max_depth": [5, 10, None],
+    "min_samples_split": [2, 5],
 }
 TARGET_COLUMN_POWER = "Power"
 DATASET_POWER = PROCESSED_FILE_POWER

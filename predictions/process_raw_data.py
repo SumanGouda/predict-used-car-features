@@ -8,14 +8,13 @@ from config.settings import (
     FEATURE_REGEX_PATTERNS,
     FUNC_CLEAN_DICT,
     ENCODING_MAP,
-    ENC_METADATA_FILE_MILEAGE,
-    OUTPUT_FILE_MILEAGE,
-    PROCESSED_FILE_MILEAGE,
+    ENC_METADATA_FILE_POWER,
+    OUTPUT_FILE_POWER,
+    PROCESSED_FILE_POWER,
 )
 from utils.data_cleaning import cleaning_pipeline
 from utils.eda import eda
 from utils.pre_preprocessing import apply_preprocessing
-
 
 def process(
     csv_file: str | Path, clean_dict: dict, func_clean_dict: dict, 
@@ -44,13 +43,12 @@ def process(
 
     return df
 
-
 if __name__ == "__main__":
     process(
-        csv_file=OUTPUT_FILE_MILEAGE,
+        csv_file=OUTPUT_FILE_POWER,
         clean_dict=FEATURE_REGEX_PATTERNS,
         func_clean_dict=FUNC_CLEAN_DICT,
         ENCODING_MAP=ENCODING_MAP,
-        metadata_json=ENC_METADATA_FILE_MILEAGE,
-        output_path=PROCESSED_FILE_MILEAGE,
+        metadata_json=ENC_METADATA_FILE_POWER,
+        output_path=PROCESSED_FILE_POWER,
     )

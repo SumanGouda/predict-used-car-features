@@ -1,7 +1,7 @@
 import json
 import re
 from pathlib import Path 
-from altair import value
+from altair import value 
 import pandas as pd
 import numpy as np
 from typing import Any
@@ -21,15 +21,13 @@ def handle_missing_values(df: pd.DataFrame, col: str,) -> tuple[pd.DataFrame, di
         "fill_value": None,
         "indicator_column": None,
     }
-
     if col not in df.columns:
         metadata["action"] = "column_not_found"
         print(f"Column '{col}' not found in DataFrame.")
         return df, metadata
-
+    
     missing_count = df[col].isnull().sum()
     total_rows = len(df)
-
     metadata["missing_count"] = int(missing_count)
 
     if total_rows == 0:
@@ -39,93 +37,62 @@ def handle_missing_values(df: pd.DataFrame, col: str,) -> tuple[pd.DataFrame, di
 
     missing_pct = (missing_count / total_rows) * 100
     metadata["missing_percentage"] = round(missing_pct, 2)
-
     print(f"{col}: {missing_pct:.2f}% missing", end=" → ")
 
     # > 50% missing → drop column
     if missing_pct > 50:
         df = df.drop(columns=[col])
-
         metadata["action"] = "drop_column"
-
         print("Dropped column (>50% missing)")
 
     # 30–50% missing → drop rows
     elif missing_pct > 30:
         rows_before = len(df)
-
         df = df.dropna(subset=[col]).reset_index(drop=True)
-
         metadata["action"] = "drop_rows"
         metadata["rows_dropped"] = rows_before - len(df)
-
         print("Dropped rows (30-50% missing)")
 
     # 10–30% missing → fill + indicator
     elif missing_pct > 10:
         indicator_col = f"{col}_was_missing"
-
         df[indicator_col] = df[col].isnull().astype(int)
 
-        if (
-            df[col].dtype == "object"
-            or isinstance(df[col].dtype, pd.CategoricalDtype)
-        ):
+        if pd.api.types.is_numeric_dtype(df[col]):
+            fill_val = df[col].mean()
+            metadata["fill_strategy"] = "mean"
+        else:
             mode_vals = df[col].mode()
             fill_val = mode_vals[0] if not mode_vals.empty else "Unknown"
-
             metadata["fill_strategy"] = "mode"
 
-        else:
-            fill_val = df[col].mean()
-
-            metadata["fill_strategy"] = "mean"
-
         df[col] = df[col].fillna(fill_val)
-
         metadata["action"] = "fill_and_indicator"
         metadata["fill_value"] = (
-            fill_val.item()
-            if hasattr(fill_val, "item")
-            else fill_val
+            fill_val.item() if hasattr(fill_val, "item") else fill_val
         )
         metadata["indicator_column"] = indicator_col
-
-        print(
-            f"Filled + added indicator column '{indicator_col}'"
-        )
+        print(f"Filled + added indicator column '{indicator_col}'")
 
     # < 10% missing → fill only
     elif missing_pct > 0:
-        if (
-            df[col].dtype == "object"
-            or isinstance(df[col].dtype, pd.CategoricalDtype)
-        ):
+        if pd.api.types.is_numeric_dtype(df[col]):
+            fill_val = df[col].median()
+            metadata["fill_strategy"] = "median"
+        else:
             mode_vals = df[col].mode()
             fill_val = mode_vals[0] if not mode_vals.empty else "Unknown"
-
             metadata["fill_strategy"] = "mode"
 
-        else:
-            fill_val = df[col].median()
-
-            metadata["fill_strategy"] = "median"
-
         df[col] = df[col].fillna(fill_val)
-
         metadata["action"] = "fill"
-
         metadata["fill_value"] = (
-            fill_val.item()
-            if hasattr(fill_val, "item")
-            else fill_val
+            fill_val.item() if hasattr(fill_val, "item") else fill_val
         )
-
         print(f"Filled with {metadata['fill_strategy']}")
-
+    
     else:
         metadata["action"] = "no_missing_values"
-
         print("No missing values")
 
     return df, metadata
@@ -388,27 +355,32 @@ def _apply_frequency_encoding(df: pd.DataFrame, column_name: str | list[str], no
     df = df.copy()
     cols = [column_name] if isinstance(column_name, str) else column_name
     metadata = {}
+
     for col in cols:
-        freq_map = df[col].value_counts(normalize=normalize).to_dict()
+        freq_series = df[col].value_counts(normalize=normalize)
+        freq_map = {
+            (k.item() if hasattr(k, "item") else k): (
+                v.item() if hasattr(v, "item") else v
+            )
+            for k, v in freq_series.to_dict().items()
+        }
+        default_val = 0.0 if normalize else 0
         target_col_name = col if drop_original else f"{col}_freq"
-        df[target_col_name] = df[col].map(freq_map)
+
+        encoded_series = df[col].map(freq_map).fillna(default_val)
+        if drop_original and target_col_name != col:
+            df = df.drop(columns=[col])
+        df[target_col_name] = encoded_series
         metadata[col] = {
             "original_column": col,
             "encoded_column": target_col_name,
             "normalize": normalize,
             "frequency_map": freq_map,
-            "unseen_default_value": 0.0 if normalize else 0,
+            "unseen_default_value": default_val,
         }
     return df, metadata
 
-def clean_engine_type(value: Any) -> str:
-    if pd.isna(value) or str(value).strip().lower() in ["nan", "none", ""]:
-        return "Unknown", "Unknown"
-    shape = _extract_engine_shape(value)
-    volume = _extract_engine_volume(value)
-    return shape, volume
-
-def _extract_engine_shape(value: Any) -> str:
+def engine_shape(value: Any) -> str:
     if pd.isna(value) or str(value).strip().lower() in ["nan", "none", ""]:
         return "Unknown"
     val_upper = str(value).strip().upper()
@@ -431,31 +403,4 @@ def _extract_engine_shape(value: Any) -> str:
         return "V"
     if "IN-LINE" in val_upper or "INLINE" in val_upper or "IN LINE" in val_upper:
         return "Inline"
-    return "Unknown"
-
-def _extract_engine_volume(value: Any) -> str:
-    if pd.isna(value):
-        return "Unknown"
-    val_str = str(value).strip()
-    if val_str.lower() in ["nan", "none", "", "unknown", "null"]:
-        return "Unknown"
-    
-    liter_match = re.search(r'\b(\d+\.\d+|\d+)\s*[-_]?\s*(?:L|LTR|LITER|LITRE)S?\b',  val_str, re.IGNORECASE)
-    if liter_match:
-        vol = float(liter_match.group(1))
-        if vol > 10.0:
-            return f"{vol / 1000:.1f}L"
-        return f"{vol:.1f}L"
-
-    cc_match = re.search(r'\b(\d{3,4})\s*CC\b', val_str, re.IGNORECASE)
-    if cc_match:
-        cc_val = float(cc_match.group(1))
-        return f"{cc_val / 1000:.1f}L"
-
-    standalone_match = re.search(
-        r'\b(\d\.\d)\s*(?=[A-Z]|Turbo|TSI|CRDi|Kappa|MPI|VVT|GDI|Multijet|T-GDi|T-CRDi|Revotron|Revotorq|Bi-fuel|Dual|Naturally|Ingenium)', val_str, re.IGNORECASE
-    )
-    if standalone_match:
-        return f"{float(standalone_match.group(1)):.1f}L"
-    
     return "Unknown"
