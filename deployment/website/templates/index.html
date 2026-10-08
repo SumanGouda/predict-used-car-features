@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CarVal — Price Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <div class="bg-grid"></div>
+  <div class="bg-glow glow-1"></div>
+  <div class="bg-glow glow-2"></div>
+  <div class="bg-glow glow-3"></div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">◈</span>
+        <span class="logo-text">CarVal</span>
+      </div>
+      <nav class="nav">
+        <span class="nav-tag">v2.1</span>
+        <span class="nav-label">Price Intelligence Engine</span>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-eyebrow">Random Forest · XGBoost · Target Encoding</div>
+    <h1 class="hero-title">
+      What's your<br />
+      car <em>worth?</em>
+    </h1>
+    <p class="hero-sub">Three independent ML models. Price, Power, and Mileage — all in one place.</p>
+    <div class="hero-arrow">↓</div>
+  </section>
+
+  <main class="predictor">
+
+    <!-- ═══════════════════════════════════════════
+         COLUMN 1 — PRICE
+         Route: POST /predict_price
+         ═══════════════════════════════════════════ -->
+    <div class="col" data-col="1">
+      <div class="col-header">
+        <span class="col-num">01</span>
+        <div>
+          <h2 class="col-title">Price</h2>
+          <p class="col-desc">Market value (₹)</p>
+        </div>
+      </div>
+
+      <form action="/predict_price" method="POST">
+        <div class="fields">
+
+          <div class="field-group">
+            <label class="label">Registration Year</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="reg_year" class="input-text" placeholder="e.g. 2019" min="1990" max="2025" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Kms Driven</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="kms" class="input-text" placeholder="e.g. 45000" />
+              <span class="input-unit">km</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Engine</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="engine" class="input-text" placeholder="e.g. 1197" />
+              <span class="input-unit">cc</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Power</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="power" class="input-text" placeholder="e.g. 82" step="0.1" />
+              <span class="input-unit">bhp</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Mileage</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="mileage" class="input-text" placeholder="e.g. 21.5" step="0.1" />
+              <span class="input-unit">kmpl</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">No. of Cylinders</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="cylinders" class="input-text" placeholder="e.g. 4" min="1" max="12" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Turbo Charger</label>
+            <div class="trans-grid">
+              <input type="radio" name="turbo" id="turbo0" value="0" checked>
+              <label for="turbo0" class="radio-card">No</label>
+              <input type="radio" name="turbo" id="turbo1" value="1">
+              <label for="turbo1" class="radio-card">Yes</label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Kerb Weight</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="kerb" class="input-text" placeholder="e.g. 995" />
+              <span class="input-unit">kg</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Ground Clearance</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="ground" class="input-text" placeholder="e.g. 163" />
+              <span class="input-unit">mm</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Fuel Type</label>
+            <div class="fuel-grid">
+              <input type="radio" name="fuel" id="p_fuel_cng" value="CNG" checked>
+              <label for="p_fuel_cng" class="radio-card">CNG <span class="ref-tag">ref</span></label>
+              <input type="radio" name="fuel" id="p_fuel_petrol" value="Petrol">
+              <label for="p_fuel_petrol" class="radio-card">Petrol</label>
+              <input type="radio" name="fuel" id="p_fuel_diesel" value="Diesel">
+              <label for="p_fuel_diesel" class="radio-card">Diesel</label>
+              <input type="radio" name="fuel" id="p_fuel_lpg" value="LPG">
+              <label for="p_fuel_lpg" class="radio-card">LPG</label>
+            </div>
+            <span class="field-note">CNG = reference category (all zeros)</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Fuel Tank Capacity</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="tank_size" class="input-text" placeholder="e.g. 35" step="0.1" />
+              <span class="input-unit">Litres</span>
+            </div>
+            <span class="field-note">Enter total capacity for selected fuel type</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">City</label>
+            <div class="input-unit-wrap">
+              <select name="city" class="input-text">
+                <option value="" disabled selected>Select a city</option>
+                <option>Agra</option><option>Ahmedabad</option><option>Bangalore</option>
+                <option>Bhopal</option><option>Bhubaneswar</option><option>Chandigarh</option>
+                <option>Chennai</option><option>Coimbatore</option><option>Delhi</option>
+                <option>Faridabad</option><option>Gurgaon</option><option>Hyderabad</option>
+                <option>Indore</option><option>Jaipur</option><option>Kochi</option>
+                <option>Kolkata</option><option>Lucknow</option><option>Meerut</option>
+                <option>Mumbai</option><option>Nagpur</option><option>Nashik</option>
+                <option>Noida</option><option>Patna</option><option>Pune</option>
+                <option>Rajkot</option><option>Ranchi</option><option>Surat</option>
+                <option>Vadodara</option><option>Visakhapatnam</option>
+              </select>
+            </div>
+            <span class="field-note">Location of the vehicle</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Brand</label>
+            <div class="input-unit-wrap">
+              <input type="text" name="brand" class="input-text" placeholder="e.g. Maruti, Hyundai…" />
+            </div>
+            <span class="field-note">Target encoded → brand_mapping</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Model</label>
+            <div class="input-unit-wrap">
+              <input type="text" name="model" class="input-text" placeholder="e.g. Swift, Creta…" />
+            </div>
+            <span class="field-note">Target encoded → model_mapping</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Drive Type</label>
+            <div class="drive-grid">
+              <input type="radio" name="drive_type" id="p_drive_awd" value="AWD" checked>
+              <label for="p_drive_awd" class="radio-card">AWD <span class="ref-tag">ref</span></label>
+              <input type="radio" name="drive_type" id="p_drive_fwd" value="FWD">
+              <label for="p_drive_fwd" class="radio-card">FWD</label>
+              <input type="radio" name="drive_type" id="p_drive_rwd" value="RWD">
+              <label for="p_drive_rwd" class="radio-card">RWD</label>
+            </div>
+            <span class="field-note">AWD = reference category (all zeros)</span>
+          </div>
+
+        </div><!-- /.fields -->
+
+        <!-- Warnings (Jinja2) -->
+        {% if brand_unknown %}
+          <p class="warn-note">⚠ "{{ brand_input }}" wasn't found in training data — used average brand value instead.</p>
+        {% endif %}
+        {% if model_unknown %}
+          <p class="warn-note">⚠ "{{ model_input }}" wasn't found in training data — used average model value instead.</p>
+        {% endif %}
+
+        <!-- Submit + result -->
+        <div class="predict-block">
+          <button type="submit" class="col-submit-btn accent">
+            <span>Predict Price</span><span class="btn-arrow">→</span>
+          </button>
+          {% if price_prediction %}
+            <div class="result-reveal">
+              <span class="result-reveal-label">Estimated Market Price</span>
+              <span class="result-reveal-value accent-text">{{ price_prediction }}</span>
+            </div>
+          {% endif %}
+        </div>
+
+      </form>
+    </div><!-- /.col -->
+
+    <!-- DIVIDER -->
+    <div class="col-divider">
+      <div class="divider-line"></div>
+      <span class="divider-label">×</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         COLUMN 2 — POWER
+         Route: POST /predict_power
+         Features (exact order):
+           Engine, No. of Cylinders, Transmission,
+           Valves Per Cylinder,
+           DriveType_FWD, DriveType_RWD,
+           Fuel_Diesel, Fuel_LPG, Fuel_Petrol,
+           EngineType_* (22 OHE cols),
+           Engine Density (computed: engine/cylinders)
+         ═══════════════════════════════════════════ -->
+    <div class="col" data-col="2">
+      <div class="col-header">
+        <span class="col-num">02</span>
+        <div>
+          <h2 class="col-title">Power</h2>
+          <p class="col-desc">Engine output (bhp)</p>
+        </div>
+      </div>
+
+      <form action="/predict_power" method="POST">
+        <div class="fields">
+
+          <div class="field-group">
+            <label class="label">Engine Displacement</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="engine" class="input-text" placeholder="e.g. 1197" step="1" />
+              <span class="input-unit">cc</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">No. of Cylinders</label>
+            <div class="cyl-radio-grid">
+              <input type="radio" name="cylinders" id="pw_cyl3" value="3">
+              <label for="pw_cyl3" class="radio-card">3</label>
+              <input type="radio" name="cylinders" id="pw_cyl4" value="4" checked>
+              <label for="pw_cyl4" class="radio-card">4</label>
+              <input type="radio" name="cylinders" id="pw_cyl6" value="6">
+              <label for="pw_cyl6" class="radio-card">6</label>
+              <input type="radio" name="cylinders" id="pw_cyl8" value="8">
+              <label for="pw_cyl8" class="radio-card">8</label>
+              <input type="radio" name="cylinders" id="pw_cyl10" value="10">
+              <label for="pw_cyl10" class="radio-card">10</label>
+              <input type="radio" name="cylinders" id="pw_cyl12" value="12">
+              <label for="pw_cyl12" class="radio-card">12</label>
+            </div>
+            <span class="field-note">Used to compute Engine Density = engine ÷ cylinders</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Transmission</label>
+            <div class="trans-grid">
+              <input type="radio" name="transmission" id="pw_trans0" value="0" checked>
+              <label for="pw_trans0" class="radio-card">Manual</label>
+              <input type="radio" name="transmission" id="pw_trans1" value="1">
+              <label for="pw_trans1" class="radio-card">Automatic</label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Valves per Cylinder</label>
+            <div class="cyl-radio-grid">
+              <input type="radio" name="valves_per_cylinder" id="pw_v2" value="2">
+              <label for="pw_v2" class="radio-card">2</label>
+              <input type="radio" name="valves_per_cylinder" id="pw_v3" value="3">
+              <label for="pw_v3" class="radio-card">3</label>
+              <input type="radio" name="valves_per_cylinder" id="pw_v4" value="4" checked>
+              <label for="pw_v4" class="radio-card">4</label>
+              <input type="radio" name="valves_per_cylinder" id="pw_v5" value="5">
+              <label for="pw_v5" class="radio-card">5</label>
+              <input type="radio" name="valves_per_cylinder" id="pw_v6" value="6">
+              <label for="pw_v6" class="radio-card">6</label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Drive Type</label>
+            <div class="drive-grid">
+              <input type="radio" name="drive_type" id="pw_drive_awd" value="AWD" checked>
+              <label for="pw_drive_awd" class="radio-card">AWD <span class="ref-tag">ref</span></label>
+              <input type="radio" name="drive_type" id="pw_drive_fwd" value="FWD">
+              <label for="pw_drive_fwd" class="radio-card">FWD</label>
+              <input type="radio" name="drive_type" id="pw_drive_rwd" value="RWD">
+              <label for="pw_drive_rwd" class="radio-card">RWD</label>
+            </div>
+            <span class="field-note">AWD = reference category (all zeros)</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Fuel Type</label>
+            <div class="fuel-grid">
+              <input type="radio" name="fuel" id="pw_fuel_cng" value="CNG" checked>
+              <label for="pw_fuel_cng" class="radio-card">CNG <span class="ref-tag">ref</span></label>
+              <input type="radio" name="fuel" id="pw_fuel_petrol" value="Petrol">
+              <label for="pw_fuel_petrol" class="radio-card">Petrol</label>
+              <input type="radio" name="fuel" id="pw_fuel_diesel" value="Diesel">
+              <label for="pw_fuel_diesel" class="radio-card">Diesel</label>
+              <input type="radio" name="fuel" id="pw_fuel_lpg" value="LPG">
+              <label for="pw_fuel_lpg" class="radio-card">LPG</label>
+            </div>
+            <span class="field-note">CNG = reference category (all zeros)</span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Engine Type</label>
+            <div class="select-wrap">
+              <select name="engine_type" class="input-text">
+                <option value="" disabled selected>Select engine type</option>
+                <option value="CRDi">CRDi (reference)</option>
+                <option value="DDiS">DDiS</option>
+                <option value="Diesel">Diesel</option>
+                <option value="F8D">F8D</option>
+                <option value="IRDE2">IRDE2</option>
+                <option value="In-Line">In-Line</option>
+                <option value="K Series">K Series</option>
+                <option value="Kappa">Kappa</option>
+                <option value="Kryotec">Kryotec</option>
+                <option value="Other">Other</option>
+                <option value="Petrol">Petrol</option>
+                <option value="Revotorq">Revotorq</option>
+                <option value="Revotron">Revotron</option>
+                <option value="SmartStream">SmartStream</option>
+                <option value="TDI">TDI</option>
+                <option value="TSI">TSI</option>
+                <option value="Toyota Diesel">Toyota Diesel</option>
+                <option value="TwinPower">TwinPower</option>
+                <option value="VVT">VVT</option>
+                <option value="i-DTEC">i-DTEC</option>
+                <option value="i-VTEC">i-VTEC</option>
+                <option value="mHawk">mHawk</option>
+                <option value="mStallion">mStallion</option>
+              </select>
+              <span class="select-arrow">⌄</span>
+            </div>
+            <span class="field-note">CRDi = reference category (all OHE cols = 0)</span>
+          </div>
+
+        </div><!-- /.fields -->
+
+        <div class="predict-block">
+          <button type="submit" class="col-submit-btn blue">
+            <span>Predict Power</span><span class="btn-arrow">→</span>
+          </button>
+          {% if power_prediction %}
+            <div class="result-reveal">
+              <span class="result-reveal-label">Predicted Engine Output</span>
+              <span class="result-reveal-value blue-text">{{ power_prediction }} <small>bhp</small></span>
+            </div>
+          {% endif %}
+        </div>
+
+      </form>
+    </div><!-- /.col -->
+
+    <!-- DIVIDER -->
+    <div class="col-divider">
+      <div class="divider-line"></div>
+      <span class="divider-label">×</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════
+         COLUMN 3 — MILEAGE
+         Route: POST /predict_mileage
+         Features (exact order):
+           Engine, Kerb Weight, Transmission Type,
+           Power, No. of Cylinders, Registration Year,
+           Mileage_was_missing (always 0),
+           Fuel_was_missing (always 0),
+           Fuel_Diesel, Fuel_LPG, Fuel_Petrol
+         ═══════════════════════════════════════════ -->
+    <div class="col" data-col="3">
+      <div class="col-header">
+        <span class="col-num">03</span>
+        <div>
+          <h2 class="col-title">Mileage</h2>
+          <p class="col-desc">Fuel efficiency (kmpl)</p>
+        </div>
+      </div>
+
+      <form action="/predict_mileage" method="POST">
+        <div class="fields">
+
+          <div class="field-group">
+            <label class="label">Engine Displacement</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="engine" class="input-text" placeholder="e.g. 1197" step="1" />
+              <span class="input-unit">cc</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Kerb Weight</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="kerb_weight" class="input-text" placeholder="e.g. 995" step="1" />
+              <span class="input-unit">kg</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Transmission</label>
+            <div class="trans-grid">
+              <input type="radio" name="transmission_type" id="ml_trans0" value="0" checked>
+              <label for="ml_trans0" class="radio-card">Manual</label>
+              <input type="radio" name="transmission_type" id="ml_trans1" value="1">
+              <label for="ml_trans1" class="radio-card">Automatic</label>
+            </div>
+            <span class="field-note">Flask reads as <code>transmission_type</code></span>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Power</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="power" class="input-text" placeholder="e.g. 82" step="0.1" />
+              <span class="input-unit">bhp</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">No. of Cylinders</label>
+            <div class="cyl-radio-grid">
+              <input type="radio" name="cylinders" id="ml_cyl3" value="3">
+              <label for="ml_cyl3" class="radio-card">3</label>
+              <input type="radio" name="cylinders" id="ml_cyl4" value="4" checked>
+              <label for="ml_cyl4" class="radio-card">4</label>
+              <input type="radio" name="cylinders" id="ml_cyl6" value="6">
+              <label for="ml_cyl6" class="radio-card">6</label>
+              <input type="radio" name="cylinders" id="ml_cyl8" value="8">
+              <label for="ml_cyl8" class="radio-card">8</label>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Registration Year</label>
+            <div class="input-unit-wrap">
+              <input type="number" name="year" class="input-text" placeholder="e.g. 2019" min="1990" max="2025" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="label">Fuel Type</label>
+            <div class="fuel-grid">
+              <input type="radio" name="fuel" id="ml_fuel_cng" value="CNG" checked>
+              <label for="ml_fuel_cng" class="radio-card">CNG <span class="ref-tag">ref</span></label>
+              <input type="radio" name="fuel" id="ml_fuel_petrol" value="Petrol">
+              <label for="ml_fuel_petrol" class="radio-card">Petrol</label>
+              <input type="radio" name="fuel" id="ml_fuel_diesel" value="Diesel">
+              <label for="ml_fuel_diesel" class="radio-card">Diesel</label>
+              <input type="radio" name="fuel" id="ml_fuel_lpg" value="LPG">
+              <label for="ml_fuel_lpg" class="radio-card">LPG</label>
+            </div>
+            <span class="field-note">CNG = reference category (all zeros)</span>
+          </div>
+
+          <!-- Always-zero missing indicators -->
+          <input type="hidden" name="mileage_was_missing" value="0" />
+          <input type="hidden" name="fuel_was_missing"    value="0" />
+
+        </div><!-- /.fields -->
+
+        <div class="predict-block">
+          <button type="submit" class="col-submit-btn green">
+            <span>Predict Mileage</span><span class="btn-arrow">→</span>
+          </button>
+          {% if mileage_prediction %}
+            <div class="result-reveal">
+              <span class="result-reveal-label">Predicted Fuel Efficiency</span>
+              <span class="result-reveal-value green-text">{{ mileage_prediction }} <small>kmpl</small></span>
+            </div>
+          {% endif %}
+        </div>
+
+      </form>
+    </div><!-- /.col -->
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span>CarVal · ML Price Intelligence</span>
+    <span class="footer-dot">·</span>
+    <span>Flask + Random Forest</span>
+    <span class="footer-dot">·</span>
+    <span>Connect <code>price_model.pkl</code> · <code>power_model.pkl</code> · <code>mileage_model.pkl</code></span>
+  </footer>
+
+</body>
+</html>
