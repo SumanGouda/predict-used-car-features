@@ -32,6 +32,16 @@ class CarFeaturePredictor:
                     df[indicator_col] = df[col_name].isnull().astype(int)
                 if fill_val is not None:
                     df[col_name] = df[col_name].fillna(fill_val)
+ 
+        if "car_name" in df.columns:
+            parts = str(df["car_name"].iloc[0]).strip().split(" ", 1)
+            car_brand = parts[0]
+            car_model = parts[1] if len(parts) > 1 else "Unknown"
+            
+            if "brand" in self.encoding_metadata and "brand" not in df.columns:
+                df["brand"] = car_brand
+            if "model" in self.encoding_metadata and "model" not in df.columns:
+                df["model"] = car_model
 
         for col_name, info in self.encoding_metadata.items():
             if col_name not in df.columns:
@@ -43,16 +53,16 @@ class CarFeaturePredictor:
             if encoding_type == "one_hot":
                 encoded_cols = meta.get("encoded_columns", [])
                 for enc_col in encoded_cols:
-                    category_name = enc_col.replace(f"{col_name}_", "")
+                    category_name = enc_col[len(col_name) + 1:]
                     df[enc_col] = 1 if str(val) == category_name else 0
                 df.drop(columns=[col_name], inplace=True)
 
-            elif encoding_type == "frequency":
-                freq_map = meta.get("frequency_map", {})
+            elif encoding_type in ("frequency", "target"):
+                enc_map = meta.get("frequency_map") or meta.get("encoding_map", {})
                 default_val = meta.get("unseen_default_value", 0)
                 target_col = meta.get("encoded_column", col_name)
-    
-                df[target_col] = df[col_name].map(freq_map).fillna(default_val)
+
+                df[target_col] = df[col_name].astype(str).map(enc_map).fillna(default_val)
                 if target_col != col_name and col_name in df.columns:
                     df.drop(columns=[col_name], inplace=True)
     
@@ -79,3 +89,4 @@ class CarFeaturePredictor:
         processed_df = self.preprocess_input(input_data)
         prediction = self.model.predict(processed_df)
         return float(prediction[0])
+    

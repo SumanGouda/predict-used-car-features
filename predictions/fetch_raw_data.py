@@ -9,8 +9,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from config.settings import (
     DB_FILE,
-    FEATURES_FILE_POWER,
-    OUTPUT_FILE_POWER,
+    FEATURES_FILE_PRICE,
+    OUTPUT_FILE_PRICE,
 )
 from utils.model_helper import get_and_validate_features
 
@@ -81,5 +81,5 @@ def _extract_table(
 
 if __name__ == "__main__": 
     print("Fetching fresh raw data from SQLite database...")
-    fetch_raw_data(FEATURES_FILE_POWER, DB_FILE, OUTPUT_FILE_POWER) 
+    fetch_raw_data(FEATURES_FILE_PRICE, DB_FILE, OUTPUT_FILE_PRICE) 
         

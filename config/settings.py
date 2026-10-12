@@ -1,7 +1,7 @@
 from pathlib import Path
 from functools import partial
-from utils.data_cleaning import (
-    clean_drive_type, clean_turbo_charger, clean_price, 
+from utils.cleaners import (
+    clean_drive_type, clean_turbo_charger, clean_price,
     clean_car_name, clean_emission_norm, clean_ownership,
     engine_shape
 )
@@ -51,10 +51,10 @@ OUTPUT_FILE_PRICE = (
     PROJECT_ROOT / "predictions" / "data" / "price" / "raw" / "data.csv"
 )
 PROCESSED_FILE_PRICE = (
-    PROJECT_ROOT / "predictions" / "data" / "data" / "processed" / "data.csv"
+    PROJECT_ROOT / "predictions" / "data" / "price" / "processed" / "data.csv"
 )
 ENC_METADATA_FILE_PRICE = (
-    PROJECT_ROOT / "predictions" / "model" / "price" / "encoding_metadata.json"
+    PROJECT_ROOT / "predictions" / "data" / "price" / "processed" / "metadata" / "encoding_metadata.json"
 )
 
 # ==========================================
@@ -67,10 +67,7 @@ FEATURE_REGEX_PATTERNS = {
     "Power": (r"(\d+\.?\d*)", float),
     "Registration Year": (r"(\d{4})", float),
     "Kms Driven": (r"([\d,]+)", float),
-    "Seats": (r"(\d+)", float),
-    "Ground Clearance Unladen": (r"(\d+\.?\d*)", float),
-    "Transmission Type": {"Automatic": 1, "Manual": 0},
-    "Transmission": {"Automatic": 1, "Manual": 0},
+    "Seats": (r"(\d+)", float),  
 }
 
 EMISSION_NORM_ORDINAL_MAP = {
@@ -94,9 +91,11 @@ OWNERSHIP_MAP = {
     "Fourth Owner": 4,
     "Fifth Owner": 5,
 }
-ENCODING_MAP={
-    "ohe_encoding" : ["Fuel", "Transmission", "Drive Type", "Turbo Charger"],
-    "freq_encoding" : ['Engine Type']
+ENCODING_MAP = {
+    "ohe_encoding": ["Fuel", "Drive Type", "Turbo Charger"],
+    "freq_encoding": ["Engine Type"],
+    "target_encoding": ["brand", "model"],
+    "label_encoding": {"Transmission": {"Automatic": 1, "Manual": 0}}
 }
 
 FUNC_CLEAN_DICT = {
@@ -140,4 +139,14 @@ DATASET_POWER = PROCESSED_FILE_POWER
 # ==========================================
 # Model Training Settings: Price
 # ==========================================
-
+EXPERIMENT_NAME_PRICE = "Price_Prediction"
+from xgboost import XGBRegressor
+MODEL_PRICE = XGBRegressor(random_state=42)
+PARAM_GRID_PRICE = {
+    "n_estimators": [100, 200],
+    "max_depth": [3, 5, 7],
+    "learning_rate": [0.01, 0.1, 0.2],
+    "subsample": [0.8, 1.0],
+}
+TARGET_COLUMN_PRICE = "Price"
+DATASET_PRICE = PROCESSED_FILE_PRICE

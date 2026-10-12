@@ -1,0 +1,23 @@
+artifact_path: file:///D:/IMP%20%20ML%20%20PROJECTS/second-hand-car-features-predicion/mlruns/607731958178451019/models/m-eeb4b6e72771424ea1970ac370ccd42a/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.14.2
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.9.1
+    skops_trusted_types: null
+mlflow_version: 3.16.1
+model_id: m-eeb4b6e72771424ea1970ac370ccd42a
+model_size_bytes: 237433
+model_uuid: m-eeb4b6e72771424ea1970ac370ccd42a
+prompts: null
+run_id: 33419ddd7a6445309ad42064d7e3dff0
+utc_time_created: '2026-10-12 06:02:54.287975'

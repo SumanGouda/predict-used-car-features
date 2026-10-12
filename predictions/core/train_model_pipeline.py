@@ -4,9 +4,7 @@ import os
 import mlflow
 import mlflow.sklearn
 import pandas as pd
-from sklearn.model_selection import train_test_split
-
-# Import custom module utilities
+from sklearn.model_selection import train_test_split 
 from predictions.core.evaluation import evaluate_model
 from predictions.core.training import train_model
 from utils.visualization import generate_performance_plots 
@@ -15,8 +13,7 @@ def run_pipeline(model, dataset, grid_params, target, exp):
     project_root = Path(__file__).resolve().parents[2]  
     mlruns_dir = project_root / "mlruns" 
 
-    mlflow.set_tracking_uri(mlruns_dir.as_uri())
-
+    mlflow.set_tracking_uri(mlruns_dir.as_uri()) 
     mlflow.set_experiment(exp)
 
     with mlflow.start_run(run_name=f"Predict_{target}") as run:
@@ -30,9 +27,7 @@ def run_pipeline(model, dataset, grid_params, target, exp):
         )
         df = pd.read_csv(dataset)
         target_col = target
-        train_df, val_df = train_test_split(
-            df, test_size=0.2, random_state=42, shuffle=True
-        )
+        train_df, val_df = train_test_split(df, test_size=0.2, random_state=42, shuffle=True)
 
         print("Training model...")
         train_results = train_model(train_df, val_df, model, target_col, grid_params,)
@@ -44,10 +39,8 @@ def run_pipeline(model, dataset, grid_params, target, exp):
         print("Evaluating model...")
         train_eval = evaluate_model(best_model, train_df, target_col, task_type="regression")
         val_eval = evaluate_model(best_model, val_df, target_col, task_type="regression")
-
         for metric_name, val in train_eval["metrics"].items():
             mlflow.log_metric(f"train_{metric_name}", val)
-
         for metric_name, val in val_eval["metrics"].items():
             mlflow.log_metric(f"val_{metric_name}", val)
 
