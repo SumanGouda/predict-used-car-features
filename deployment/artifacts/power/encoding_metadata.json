@@ -1,0 +1,71 @@
+{
+    "Fuel": {
+        "encoding_type": "one_hot",
+        "metadata": {
+            "original_column": "Fuel",
+            "all_categories": [
+                "CNG",
+                "Diesel",
+                "LPG",
+                "Petrol"
+            ],
+            "encoded_columns": [
+                "Fuel_Diesel",
+                "Fuel_LPG",
+                "Fuel_Petrol"
+            ],
+            "dropped_baseline_category": "CNG"
+        }
+    },
+    "Transmission": {
+        "encoding_type": "one_hot",
+        "metadata": {
+            "original_column": "Transmission",
+            "all_categories": [
+                0,
+                1
+            ],
+            "encoded_columns": [
+                "Transmission_1"
+            ],
+            "dropped_baseline_category": 0
+        }
+    },
+    "Drive Type": {
+        "encoding_type": "one_hot",
+        "metadata": {
+            "original_column": "Drive Type",
+            "all_categories": [
+                "AWD",
+                "FWD",
+                "RWD"
+            ],
+            "encoded_columns": [
+                "Drive Type_FWD",
+                "Drive Type_RWD"
+            ],
+            "dropped_baseline_category": "AWD"
+        }
+    },
+    "Engine Type": {
+        "encoding_type": "frequency",
+        "metadata": {
+            "original_column": "Engine Type",
+            "encoded_column": "Engine Type",
+            "normalize": false,
+            "frequency_map": {
+                "Unknown": 1880,
+                "Inline": 177,
+                "I4": 68,
+                "V": 31,
+                "I6": 19,
+                "V6": 19,
+                "V8": 7,
+                "I3": 3,
+                "V12": 2,
+                "I2": 1
+            },
+            "unseen_default_value": 0
+        }
+    }
+}

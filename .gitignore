@@ -50,3 +50,7 @@ web_scraping_old/
 ANN/
 trash/
 mlruns/
+.pytest_cache/
+
+!deployment/artifacts/**/*.json
+!deployment/artifacts/**/*.pkl

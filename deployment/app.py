@@ -1,7 +1,9 @@
 from pathlib import Path
-from fastapi import FastAPI, HTTPException, status 
+from fastapi import FastAPI, HTTPException, status, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from inference import CarFeaturePredictor 
-from schemas import CarMileageInput, CarPowerInput, CarPriceInput
+from schemas import CarMileageInput, CarPowerInput, CarPriceInput 
 
 # Define paths to model artifact directories
 BASE_DIR = Path(__file__).resolve().parents[0]
@@ -17,6 +19,8 @@ app = FastAPI(
     description="Multi-model inference API providing predictions for vehicle metrics like mileage, power, and price.",
     version="1.0.0",
 )
+templates = Jinja2Templates(directory=BASE_DIR / "templates")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
  
 @app.get("/", status_code=status.HTTP_200_OK, tags=["General"])
 def home():

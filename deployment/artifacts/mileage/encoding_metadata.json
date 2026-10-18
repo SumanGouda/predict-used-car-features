@@ -1,0 +1,44 @@
+{
+    "Fuel": {
+        "encoding_type": "one_hot",
+        "metadata": {
+            "original_column": "Fuel",
+            "all_categories": [
+                "CNG",
+                "Diesel",
+                "LPG",
+                "Petrol"
+            ],
+            "encoded_columns": [
+                "Fuel_Diesel",
+                "Fuel_LPG",
+                "Fuel_Petrol"
+            ],
+            "dropped_baseline_category": "CNG"
+        }
+    },
+    "engine_shape": {
+        "encoding_type": "frequency",
+        "metadata": {
+            "original_column": "engine_shape",
+            "encoded_column": "engine_shape",
+            "normalize": false,
+            "frequency_map": {
+                "Unknown": 11856
+            },
+            "unseen_default_value": 0
+        }
+    },
+    "engine_volume": {
+        "encoding_type": "frequency",
+        "metadata": {
+            "original_column": "engine_volume",
+            "encoded_column": "engine_volume",
+            "normalize": false,
+            "frequency_map": {
+                "Unknown": 11856
+            },
+            "unseen_default_value": 0
+        }
+    }
+}
