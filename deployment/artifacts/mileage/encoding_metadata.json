@@ -17,28 +17,16 @@
             "dropped_baseline_category": "CNG"
         }
     },
-    "engine_shape": {
-        "encoding_type": "frequency",
+    "Transmission": {
+        "encoding_type": "label",
         "metadata": {
-            "original_column": "engine_shape",
-            "encoded_column": "engine_shape",
-            "normalize": false,
-            "frequency_map": {
-                "Unknown": 11856
+            "original_column": "Transmission",
+            "encoded_column": "Transmission",
+            "label_map": {
+                "Automatic": 1,
+                "Manual": 0
             },
-            "unseen_default_value": 0
-        }
-    },
-    "engine_volume": {
-        "encoding_type": "frequency",
-        "metadata": {
-            "original_column": "engine_volume",
-            "encoded_column": "engine_volume",
-            "normalize": false,
-            "frequency_map": {
-                "Unknown": 11856
-            },
-            "unseen_default_value": 0
+            "unseen_default_value": -1
         }
     }
 }

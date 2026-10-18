@@ -17,20 +17,6 @@
             "dropped_baseline_category": "CNG"
         }
     },
-    "Transmission": {
-        "encoding_type": "one_hot",
-        "metadata": {
-            "original_column": "Transmission",
-            "all_categories": [
-                0,
-                1
-            ],
-            "encoded_columns": [
-                "Transmission_1"
-            ],
-            "dropped_baseline_category": 0
-        }
-    },
     "Drive Type": {
         "encoding_type": "one_hot",
         "metadata": {
@@ -66,6 +52,18 @@
                 "I2": 1
             },
             "unseen_default_value": 0
+        }
+    },
+    "Transmission": {
+        "encoding_type": "label",
+        "metadata": {
+            "original_column": "Transmission",
+            "encoded_column": "Transmission",
+            "label_map": {
+                "Automatic": 1,
+                "Manual": 0
+            },
+            "unseen_default_value": -1
         }
     }
 }

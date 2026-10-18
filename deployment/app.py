@@ -1,7 +1,9 @@
 from pathlib import Path
 from fastapi import FastAPI, HTTPException, status, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from pydantic import ValidationError
 from inference import CarFeaturePredictor 
 from schemas import CarMileageInput, CarPowerInput, CarPriceInput 
 
@@ -40,7 +42,7 @@ def health_check():
 def predict_mileage_endpoint(data: CarMileageInput):
     """Accepts car specifications and returns predicted mileage (kmpl)."""
     try:
-        input_dict = data.model_dump()
+        input_dict = data.model_dump(by_alias=True)
         predicted_val = mileage_predictor.predict(input_dict)
         return {
             "status": "success",
@@ -57,7 +59,7 @@ def predict_mileage_endpoint(data: CarMileageInput):
 def predict_power_endpoint(data: CarPowerInput):
     """Accepts car specifications and returns predicted engine power (bhp)."""
     try:
-        input_dict = data.model_dump()
+        input_dict = data.model_dump(by_alias=True)
         predicted_val = power_predictor.predict(input_dict)
         return {
             "status": "success",
@@ -87,4 +89,48 @@ def predict_price_endpoint(data: CarPriceInput):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
-    
+
+
+# ---------- Dashboard ----------
+FEATURES = {
+    "mileage": (CarMileageInput, mileage_predictor, "kmpl"),
+    "power": (CarPowerInput, power_predictor, "bhp"),
+    "price": (CarPriceInput, price_predictor, "INR"),
+}
+
+
+def render(request: Request, feature: str, values=None, result=None, error=None):
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {"feature": feature, "values": values or {}, "result": result, "error": error},
+    )
+
+
+@app.get("/dashboard", include_in_schema=False)
+def dashboard_root():
+    return RedirectResponse("/dashboard/price")
+
+
+@app.get("/dashboard/{feature}", response_class=HTMLResponse, include_in_schema=False)
+def dashboard_page(request: Request, feature: str):
+    if feature not in FEATURES:
+        raise HTTPException(status_code=404, detail="Unknown feature")
+    return render(request, feature)
+
+
+@app.post("/dashboard/{feature}", response_class=HTMLResponse, include_in_schema=False)
+async def dashboard_predict(request: Request, feature: str):
+    if feature not in FEATURES:
+        raise HTTPException(status_code=404, detail="Unknown feature")
+    schema, predictor, unit = FEATURES[feature]
+    values = dict(await request.form())
+    try:
+        data = schema.model_validate(values)
+        prediction = predictor.predict(data.model_dump(by_alias=True))
+        return render(request, feature, values, result={"value": round(prediction, 2), "unit": unit})
+    except ValidationError as e:
+        error = "; ".join(f"{err['loc'][0]}: {err['msg']}" for err in e.errors())
+    except Exception as e:
+        error = str(e)
+    return render(request, feature, values, error=error)

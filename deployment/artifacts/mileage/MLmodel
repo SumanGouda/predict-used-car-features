@@ -1,4 +1,4 @@
-artifact_path: file:///D:/IMP%20%20ML%20%20PROJECTS/second-hand-car-features-predicion/mlruns/386273404795178527/models/m-ebcf85b86cd24ba5b34463505ad50851/artifacts
+artifact_path: file:///D:/IMP%20%20ML%20%20PROJECTS/second-hand-car-features-predicion/mlruns/644531053316442555/models/m-53d308ba477444b2803bc6281dc7bacd/artifacts
 flavors:
   python_function:
     env:
@@ -15,9 +15,9 @@ flavors:
     sklearn_version: 1.9.1
     skops_trusted_types: null
 mlflow_version: 3.16.1
-model_id: m-ebcf85b86cd24ba5b34463505ad50851
-model_size_bytes: 49135880
-model_uuid: m-ebcf85b86cd24ba5b34463505ad50851
+model_id: m-53d308ba477444b2803bc6281dc7bacd
+model_size_bytes: 23533113
+model_uuid: m-53d308ba477444b2803bc6281dc7bacd
 prompts: null
-run_id: 0111fe316206495e8b8eb62b1a2fb11d
-utc_time_created: '2026-10-07 15:18:13.371492'
+run_id: f7eef7fbad474c4f817b3a612ad636ab
+utc_time_created: '2026-10-18 08:52:44.796605'
