@@ -1,21 +1,11 @@
 from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    mean_absolute_error,
-    mean_squared_error,
-    precision_score,
-    r2_score,
-    recall_score,
+    accuracy_score, f1_score, mean_absolute_error,
+    mean_squared_error, precision_score, r2_score, recall_score,
 )
 import numpy as np
 
 
-def evaluate_model(
-    model,
-    test_df,
-    target_column: str,
-    task_type: str = "regression",
-):
+def evaluate_model(model, test_df, target_column: str, task_type: str = "regression"):
     """Evaluates a trained model on a target dataset split.
 
     Returns metrics dict and prediction arrays compatible with MLflow logging

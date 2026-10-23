@@ -9,12 +9,12 @@ from predictions.core.evaluation import evaluate_model
 from predictions.core.training import train_model
 from utils.visualization import generate_performance_plots 
 
-def run_pipeline(model, dataset, grid_params, target, exp):
+def run_pipeline(model, dataset, grid_params, target, exp_name):
     project_root = Path(__file__).resolve().parents[2]  
     mlruns_dir = project_root / "mlruns" 
 
     mlflow.set_tracking_uri(mlruns_dir.as_uri()) 
-    mlflow.set_experiment(exp)
+    mlflow.set_experiment(exp_name)
 
     with mlflow.start_run(run_name=f"Predict_{target}") as run:
         print(f"Active MLflow Run ID: {run.info.run_id}")

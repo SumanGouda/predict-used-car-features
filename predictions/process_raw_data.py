@@ -11,11 +11,9 @@ from config.settings import (
 )
 from utils.preprocessing import cleaning_pipeline
 from utils.eda import eda
-from utils.pre_preprocessing import apply_preprocessing
+from utils.manual_processing import apply_preprocessing
 
-def process(
-    csv_file: str | Path, metadata_json: str | Path, output_path: str | Path,
-) -> pd.DataFrame:
+def process(csv_file: str | Path, metadata_json: str | Path, output_path: str | Path,) -> pd.DataFrame:
     """
         Cleans raw CSV data, generates EDA diagnostic charts, applies post-EDA
         preprocessing, and exports processed data to CSV.
