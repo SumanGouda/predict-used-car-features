@@ -1,6 +1,6 @@
 # Used Car Features Prediction
 
-An end-to-end machine learning project for second-hand cars. It scrapes listings, cleans and encodes the data, trains models, and serves three predictions through a FastAPI service with a web dashboard:
+An end-to-end machine learning project for second-hand cars. It scrapes listings, cleans and encodes the data, trains models, and serves three predictions through a FastAPI service with an interactive web dashboard:
 
 | Prediction | Endpoint | Unit |
 |---|---|---|
@@ -10,14 +10,46 @@ An end-to-end machine learning project for second-hand cars. It scrapes listings
 
 ---
 
+## Quick start with Docker
+
+No Python setup is needed. With Docker installed, run:
+
+```bash
+docker run -p 8000:8000 sumangouda/car-analytics:latest
+```
+
+Then open the interactive dashboard in your browser:
+
+**http://localhost:8000/dashboard**
+
+Other pages served by the same container:
+
+- API docs (Swagger UI): http://localhost:8000/docs
+- Health check: http://localhost:8000/health
+
+The image contains only the inference service: the API, the dashboard and the trained models. Scraping and training are not part of it.
+
+### Build the image yourself
+
+```bash
+cd deployment
+docker build -t car-analytics .
+docker run --rm -p 8000:8000 car-analytics
+```
+
+The Docker build uses `deployment/requirements.txt`, a slim list of pinned packages that only the API needs. The root `requirements.txt` covers the whole project, including training and scraping.
+
+---
+
 ## Features
 
 - **Data collection:** a CarDekho scraper that stores listings in a database.
 - **Reproducible pipeline:** fetch, clean, encode, train and evaluate scripts, with an EDA report (correlation heatmap, distributions, outliers) saved for each target.
-- **Experiment tracking:** models are logged and registered with MLflow.
+- **Experiment tracking:** training runs are logged and registered with MLflow.
 - **One inference class for all models:** `CarFeaturePredictor` loads a model and its encoding metadata from an artifact folder, so adding a new target needs new artifacts, not new code.
 - **Validated API:** Pydantic schemas check types and allowed categories before a request reaches the model.
-- **Dashboard:** a web UI for the three predictions, served by the same FastAPI app.
+- **Dashboard:** a dark-themed web UI with a form for each prediction, served by the same FastAPI app.
+- **Containerized:** a Docker image runs the full service with a single command.
 - **Tests:** pytest suites for the cleaning, preprocessing, model helpers and training pipeline.
 
 ---
@@ -35,6 +67,8 @@ CarDekho ──► web_scraping ──► database ──► predictions/fetch_r
                                       model.pkl + encoding_metadata.json
                                                    │
                          FastAPI + CarFeaturePredictor ──► JSON API / dashboard
+                                                   │
+                                          Docker image (deployment/)
 ```
 
 **Encoding is saved with the model.** Each artifact folder holds an `encoding_metadata.json` that records how every categorical column was transformed during training. At inference time the same transformations are replayed from that file, so training and serving cannot drift apart. Supported encodings are:
@@ -64,24 +98,27 @@ Categories the model never saw fall back to a stored default instead of raising 
 │   ├── activate_train_pipeline.py
 │   └── core/                # training, evaluation, pipeline
 ├── utils/                   # Cleaners, preprocessing, EDA, model helpers, MLflow registry
-├── deployment/              # The API
-│   ├── app.py               # FastAPI routes
+├── deployment/              # The API and its Docker setup
+│   ├── app.py               # FastAPI routes and dashboard routes
 │   ├── inference.py         # CarFeaturePredictor
 │   ├── schemas.py           # Pydantic request models
 │   ├── artifacts/           # mileage/, power/, price/
 │   ├── templates/           # Dashboard HTML
-│   └── static/              # Dashboard CSS and JS
+│   ├── static/              # Dashboard CSS
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   └── requirements.txt     # API-only dependencies
 ├── tests/                   # pytest suites
-└── requirements.txt
+└── requirements.txt         # Full project dependencies
 ```
 
 ---
 
-## Getting started
+## Run locally without Docker
 
 ### Prerequisites
 
-- Python 3.10 or newer
+- Python 3.14 (the version the pinned dependencies were developed and tested with)
 - `pip`
 
 ### Install
@@ -97,17 +134,16 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### Run the API
+### Start the API
 
-The trained models are included in `deployment/artifacts/`, so you can start the API directly:
+The trained models are included in `deployment/artifacts/`, so you can start the API directly. Run it from inside `deployment/`, because the app imports its modules from that folder:
 
 ```bash
 cd deployment
 uvicorn app:app --reload
 ```
 
-- Interactive API docs: http://127.0.0.1:8000/docs
-- Health check: http://127.0.0.1:8000/health
+Then open http://127.0.0.1:8000/dashboard for the dashboard, or http://127.0.0.1:8000/docs for the API docs.
 
 ---
 
@@ -119,16 +155,16 @@ Request keys must match the aliases below, including the spaces.
 
 ```json
 {
-  "Mileage": 20.5,
+  "Mileage": 21.2,
   "Engine": 1197,
-  "Kerb Weight": 900,
+  "Kerb Weight": 890,
   "Power": 82,
   "Registration Year": 2019,
   "Kms Driven": 45000,
   "Seats": 5,
   "Transmission": "Manual",
   "Drive Type": "FWD",
-  "car_name": "Maruti Swift",
+  "car_name": "Maruti Suzuki Swift",
   "Turbo Charger": "No",
   "Ownership": 1,
   "Fuel": "Petrol",
@@ -136,19 +172,19 @@ Request keys must match the aliases below, including the spaces.
 }
 ```
 
-Response shape (the value is illustrative):
+Response:
 
 ```json
 {
   "status": "success",
-  "predicted_price": 512000.0,
+  "predicted_price": 471164.75,
   "unit": "INR"
 }
 ```
 
 Allowed categories for the price model: `Transmission` is `Automatic` or `Manual`, `Drive Type` is `FWD`, `RWD` or `AWD`, `Turbo Charger` is `No`, `Yes` or `Twin`, and `Fuel` is `CNG`, `Diesel`, `LPG` or `Petrol`.
 
-The request fields for `/predict/mileage` and `/predict/power` are listed in the `/docs` page.
+The request fields for `/predict/mileage` and `/predict/power` are listed on the `/docs` page.
 
 ---
 
@@ -173,7 +209,7 @@ Training runs are tracked in MLflow. To browse them:
 mlflow ui
 ```
 
-Copy the final `model.pkl` and `encoding_metadata.json` for each target into `deployment/artifacts/<target>/` to update the API.
+Copy the final `model.pkl` and `encoding_metadata.json` for each target into `deployment/artifacts/<target>/` to update the API, then rebuild the Docker image.
 
 ---
 
@@ -185,16 +221,6 @@ pytest
 
 ---
 
-## Results
-
-| Target | Model | Metrics |
-|---|---|---|
-| Mileage | | |
-| Power | | |
-| Price | XGBoost | |
-
----
-
 ## Tech stack
 
-Python, pandas, XGBoost, MLflow, FastAPI, Pydantic, Jinja2, joblib, pytest.
+Python, pandas, XGBoost, scikit-learn, MLflow, FastAPI, Pydantic, Jinja2, Docker, pytest.
