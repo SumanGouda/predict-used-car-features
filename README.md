@@ -151,6 +151,51 @@ Then open http://127.0.0.1:8000/dashboard for the dashboard, or http://127.0.0.1
 
 Request keys must match the aliases below, including the spaces.
 
+**`POST /predict/power`**
+```json
+{
+  "Engine": 796,
+  "No. of Cylinders": 3,
+  "Transmission": "Manual",
+  "Emission Norm Compliance": 4,
+  "Valves Per Cylinder": 4,
+  "Engine Type": "I3",
+  "Fuel": "Petrol",
+  "Drive Type": "FWD"
+}
+```
+Response:
+
+```json
+{
+  "status": "success",
+  "predicted_power": 69.86,
+  "unit": "bhp"
+}
+```
+
+**`POST /predict/mileage`**
+```json
+{
+  "Engine": 796,
+  "Kerb Weight": 750,
+  "Transmission": "Manual",
+  "Power": 47,
+  "No. of Cylinders": 3,
+  "Registration Year": 2019,
+  "Fuel": "Petrol"
+}
+```
+Response:
+
+```json
+{
+  "status": "success",
+  "predicted_mileage": 24.6,
+  "unit": "kmpl"
+}
+```
+
 **`POST /predict/price`**
 
 ```json
